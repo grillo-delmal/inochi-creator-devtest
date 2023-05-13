@@ -8,13 +8,12 @@ on:
   workflow_dispatch:
 
 env:
-  APP_ID: com.inochi2d.inochi-creator
-  MANIFEST_PATH: com.inochi2d.inochi-creator.yml
+  APP_ID: io.github.grillo_delmal.inochi-creator
+  MANIFEST_PATH: io.github.grillo_delmal.inochi-creator.yml
   FLATPAK_BUNDLE: inochi-creator
-  FLATPAK_BRANCH: nightly
-  #FIXME: Change this when exporting
+  FLATPAK_BRANCH: devtest
   DESTINATION_GITHUB_USERNAME: grillo-delmal 
-  DESTINATION_REPOSITORY_NAME: inochi-creator-nightly
+  DESTINATION_REPOSITORY_NAME: inochi2d-flatpak-devtest
   FLATPAK_BUILD_DIR: build-dir
   FLATPAK_BUILD_REPO: build-repo
 
@@ -89,12 +88,19 @@ jobs:
         set -e
         mkdir -p ${FLATPAK_BUILD_REPO}/{extensions,refs/{mirrors,remotes},state,tmp/cache}
         flatpak build-bundle --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo ${FLATPAK_BUILD_REPO} ${FLATPAK_BUNDLE}.flatpak ${APP_ID} ${FLATPAK_BRANCH}
+        flatpak build-bundle --runtime ${FLATPAK_BUILD_REPO} ${FLATPAK_BUNDLE}.debug.flatpak ${APP_ID/-/_}.Debug ${FLATPAK_BRANCH}
 
     - name: Upload flatpak bundle
       uses: actions/upload-artifact@v1
       with:
         name: ${{ env.FLATPAK_BUNDLE }}
         path: ${{ env.FLATPAK_BUNDLE }}.flatpak
+
+    - name: Upload flatpak bundle
+      uses: actions/upload-artifact@v1
+      with:
+        name: ${{ env.FLATPAK_BUNDLE }}.debug
+        path: ${{ env.FLATPAK_BUNDLE }}.debug.flatpak
 
   publish-oci:
     if: github.ref == 'refs/heads/main'
@@ -123,6 +129,10 @@ jobs:
           --oci \
           --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo \
           ${FLATPAK_BUILD_REPO} ${FLATPAK_BUNDLE} ${APP_ID} ${FLATPAK_BRANCH}
+        flatpak build-bundle \
+          --oci \
+          --runtime \
+          ${FLATPAK_BUILD_REPO} ${FLATPAK_BUNDLE}.debug ${APP_ID/-/_}.Debug ${FLATPAK_BRANCH}
 
     - name: Publish OCI image
       env:
@@ -134,6 +144,9 @@ jobs:
         skopeo login --username "${{ github.actor }}" --password-stdin ghcr.io <<<$GITHUB_TOKEN
         skopeo copy \
           oci:${FLATPAK_BUNDLE} \
+          docker://ghcr.io/${IMAGE_REPOSITORY}:$FLATPAK_BRANCH
+        skopeo copy \
+          oci:${FLATPAK_BUNDLE}.debug \
           docker://ghcr.io/${IMAGE_REPOSITORY}:$FLATPAK_BRANCH
 
     - name: Update static index
