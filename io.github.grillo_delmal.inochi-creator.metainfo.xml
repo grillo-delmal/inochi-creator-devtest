@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop">
-  <id>com.inochi2d.inochi-creator</id>
+  <id>io.github.grillo_delmal.inochi-creator</id>
   <name>Inochi Creator</name>
   <summary>Tool to create and edit Inochi2D puppets.</summary>
   <developer_name>Luna Nielsen</developer_name>
-  <launchable type="desktop-id">com.inochi2d.inochi-creator.desktop</launchable>
+  <launchable type="desktop-id">git.grillo_delmal.inochi-creator.desktop</launchable>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>BSD-2-Clause</project_license>
   <description>
+    <p><b>This is a development test version of the software maintained by Grillo del Mal, use at your own risk.</b></p>
     <p>Inochi2D is a framework for realtime 2D puppet animation which can be used for VTubing, 
       game development and digital animation.</p>
     <p>Inochi Creator is a tool that lets you create and edit Inochi2D puppets.</p>
@@ -19,21 +20,17 @@
     </screenshot>
   </screenshots>
   <releases>
-    <release version="nightly">
+    <release version="devtest">
       <url>https://github.com/Inochi2D/inochi-creator/</url>
       <description>
-         <p>This is a nightly build of Inochi Creator!</p>
+         <p>This is a development test build of Inochi Creator!</p>
          <p>Inochi Creator may crash unexpectedly and you will likely encounter bugs.</p>
          <p>Make sure to save and back up your work often!</p>
       </description>
     </release>
   </releases>
-  <url type="homepage">https://lunafoxgirlvt.itch.io/inochi-creator</url>
-  <url type="bugtracker">https://github.com/Inochi2D/inochi-creator/issues</url>
+  <url type="homepage">https://github.com/grillo-delmal/inochi-creator-nightly</url>
   <url type="help">https://docs.inochi2d.com</url>
-  <url type="donation">https://inochi2d.com/#donate</url>
-  <url type="vcs-browser">https://github.com/Inochi2D/inochi-creator</url>
-  <url type="contribute">https://github.com/Inochi2D/inochi-creator</url>
   <categories>
     <category>Graphics</category>
   </categories>

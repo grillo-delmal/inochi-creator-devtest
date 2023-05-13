@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=Inochi Creator (Dev Demo)
+Name=Inochi Creator (Dev Test)
 Exec=inochi-creator
-Icon=com.inochi2d.inochi-creator
+Icon=io.github.grillo_delmal.inochi-creator
 Type=Application
 Categories=Utility
