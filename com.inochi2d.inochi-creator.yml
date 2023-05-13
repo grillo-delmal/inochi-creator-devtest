@@ -34,6 +34,8 @@ modules:
     buildsystem: simple
     build-options:
       append-path: /usr/lib/sdk/ldc/bin
+      env:
+        DFLAGS: '-g --d-debug'
     build-commands:
       - chmod +x ./gentl.sh; ./gentl.sh
       - dub add-path .flatpak-dub;
