@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop">
   <id>io.github.grillo_delmal.inochi-creator</id>
-  <name>Inochi Creator</name>
+  <name>Inochi Creator (Dev Test)</name>
   <summary>Tool to create and edit Inochi2D puppets.</summary>
   <developer_name>Luna Nielsen</developer_name>
-  <launchable type="desktop-id">git.grillo_delmal.inochi-creator.desktop</launchable>
+  <launchable type="desktop-id">io.github.grillo_delmal.inochi-creator.desktop</launchable>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>BSD-2-Clause</project_license>
   <description>
-    <p><b>This is a development test version of the software maintained by Grillo del Mal, use at your own risk.</b></p>
+    <p>This is a development test version of the software maintained by Grillo del Mal, use at your own risk.</p>
     <p>Inochi2D is a framework for realtime 2D puppet animation which can be used for VTubing, 
       game development and digital animation.</p>
     <p>Inochi Creator is a tool that lets you create and edit Inochi2D puppets.</p>
