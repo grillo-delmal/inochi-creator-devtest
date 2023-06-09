@@ -21,7 +21,6 @@
   </screenshots>
   <releases>
     <release version="devtest">
-      <url>https://github.com/Inochi2D/inochi-creator/</url>
       <description>
          <p>This is a development test build of Inochi Creator!</p>
          <p>Inochi Creator may crash unexpectedly and you will likely encounter bugs.</p>
