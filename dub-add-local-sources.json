@@ -16,7 +16,7 @@
     {
         "type": "archive",
         "url": "https://code.dlang.org/packages/bcaa/0.0.8.zip",
-        "sha256": "593fed1f885a678138bcc8ea654f811abbeb740236bd6f7ad3ee350951f218ed",
+        "sha256": "7a57fc8ad76e79367e1814fbe33841b0f396703b2f8e272521e7a0db19e6476b",
         "dest": ".flatpak-dub/bcaa-0.0.8"
     },
     {
