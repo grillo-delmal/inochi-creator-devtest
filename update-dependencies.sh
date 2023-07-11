@@ -18,7 +18,7 @@ Usage: $0 [OPTION]...
 Checks a specific version of inochi-creator, calculates dependencies and stores them 
 on a file ready to be used by flatpak-builder.
 By default it uses the version defined by the commit hash defined in the
-./com.inochi2d.inochi-creator.yml file
+./io.github.grillo_delmal.inochi-creator.yml file
 
     --target=<string>       Checkout a specific hash/tag/branch instead of
                             reading the one defined on the yaml file.
@@ -56,7 +56,7 @@ done
 echo "### Verification Stage"
 if [ -z ${CHECKOUT_TARGET} ]; then
     if [ -z ${EXT_CREATOR} ]; then
-        CHECKOUT_TARGET=$(python3 ./scripts/find-creator-hash.py ./com.inochi2d.inochi-creator.yml)
+        CHECKOUT_TARGET=$(python3 ./scripts/find-creator-hash.py ./io.github.grillo_delmal.inochi-creator.yml)
     else
         CHECKOUT_TARGET=$(python3 ./scripts/find-creator-hash.py ${EXT_CREATOR} ext)
     fi
@@ -100,6 +100,9 @@ git clone https://github.com/Inochi2D/i2d-opengl.git
 git clone https://github.com/KitsunebiGames/i18n.git i18n-d
 git clone https://github.com/Inochi2D/dportals.git
 git clone https://github.com/Inochi2D/kra-d.git
+
+# Fixme Use v0_8 branch until v9 is usable
+git -C ./inochi2d checkout v0_8
 
 # Download gitver and semver
 git clone https://github.com/Inochi2D/gitver.git
