@@ -99,6 +99,7 @@ git clone https://github.com/Inochi2D/i2d-imgui.git
 git clone https://github.com/Inochi2D/i2d-opengl.git
 git clone https://github.com/KitsunebiGames/i18n.git i18n-d
 git clone https://github.com/Inochi2D/dportals.git
+git clone https://github.com/Inochi2D/kra-d.git
 
 # Download gitver and semver
 git clone https://github.com/Inochi2D/gitver.git
