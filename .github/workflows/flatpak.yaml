@@ -76,7 +76,7 @@ jobs:
     - name: Install flatpak
       run: |
         set -e
-        sudo apt install -y flatpak
+        sudo apt-get update && sudo apt-get -y --no-install-recommends install flatpak
 
     - name: Download flatpak repo
       uses: actions/download-artifact@v1
@@ -114,7 +114,7 @@ jobs:
       run: |
         set -e
         . /etc/os-release
-        sudo apt install -y skopeo flatpak jq
+        sudo apt-get update && sudo apt-get -y --no-install-recommends install skopeo flatpak jq
 
     - name: Download flatpak repo
       uses: actions/download-artifact@v1
