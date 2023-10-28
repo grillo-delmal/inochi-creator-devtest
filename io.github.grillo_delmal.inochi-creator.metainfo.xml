@@ -20,7 +20,7 @@
     </screenshot>
   </screenshots>
   <releases>
-    <release version="0.8.1+build.5.g28a6f41.20231003T010242Z" date="2023-10-03">
+    <release version="0.8.1+build.5.g28a6f41.20231028T010103Z" date="2023-10-28">
       <description>
          <p>This is a development test build of Inochi Creator!</p>
          <p>Inochi Creator may crash unexpectedly and you will likely encounter bugs.</p>
