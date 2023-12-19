@@ -146,7 +146,7 @@
     {
         "type": "archive",
         "url": "https://code.dlang.org/packages/memutils/1.0.10.zip",
-        "sha256": "7aacb0e4c24f141ae4ec113367572cbeacf4bbc7ef0cedc9777c1fa21dbb9394",
+        "sha256": "4c942c1939cac494d5793265d3bde79cbfc616945ea7b802d7a9f095e30aa342",
         "dest": ".flatpak-dub/memutils-1.0.10"
     },
     {
