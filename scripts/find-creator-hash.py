@@ -2,7 +2,7 @@ import yaml
 import sys
 
 yaml_path = sys.argv[1]
-ext = len(sys.argv) > 2 and sys.argv == "ext" 
+ext = len(sys.argv) > 2 and sys.argv[2] == "ext" 
 
 data = {}
 with open(yaml_path, "r") as f:
