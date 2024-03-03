@@ -3,7 +3,9 @@
   <id>io.github.grillo_delmal.inochi-creator</id>
   <name>Inochi Creator (Dev Test)</name>
   <summary>Tool to create and edit Inochi2D puppets</summary>
-  <developer_name>Luna Nielsen</developer_name>
+  <developer id="com.inochi2d">
+    <name>Luna the Foxgirl</name>
+  </developer>
   <launchable type="desktop-id">io.github.grillo_delmal.inochi-creator.desktop</launchable>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>BSD-2-Clause</project_license>
@@ -33,9 +35,9 @@
   <categories>
     <category>Graphics</category>
   </categories>
-  <requires>
+  <recommends>
     <control>pointing</control>
     <control>keyboard</control>
-  </requires>
+  </recommends>
   <content_rating type="oars-1.1"/>
 </component>
