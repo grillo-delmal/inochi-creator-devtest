@@ -1,0 +1,45 @@
+From 3bd79aa781fc6e6be6de94e348fd54a845681d30 Mon Sep 17 00:00:00 2001
+From: Grillo del Mal <grillo@delmal.cl>
+Date: Thu, 14 Mar 2024 09:48:30 -0300
+Subject: [PATCH 1/2] Fix crash when copying into unpaired flip pairings
+
+---
+ source/creator/windows/flipconfig.d | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/source/creator/windows/flipconfig.d b/source/creator/windows/flipconfig.d
+index 634abd4fb..6a3183175 100644
+--- a/source/creator/windows/flipconfig.d
++++ b/source/creator/windows/flipconfig.d
+@@ -132,7 +132,7 @@ FlipPair[] incGetFlipPairs() {
+ 
+ FlipPair incGetFlipPairFor(Node node) {
+     foreach (pair; flipPairs) {
+-        if (pair.parts[0].uuid == node.uuid || pair.parts[1].uuid == node.uuid) {
++        if (pair.parts[1] !is null && (pair.parts[0].uuid == node.uuid || pair.parts[1].uuid == node.uuid)) {
+             return pair;
+         }
+     }
+
+From 98ddcb864b127241427d4c2c2b0bc60e70e2325b Mon Sep 17 00:00:00 2001
+From: Grillo del Mal <grillo@delmal.cl>
+Date: Thu, 14 Mar 2024 10:13:50 -0300
+Subject: [PATCH 2/2] Fix typo in Paste Horizontal Flip
+
+---
+ source/creator/panels/parameters.d | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/source/creator/panels/parameters.d b/source/creator/panels/parameters.d
+index 7bc9d1aa2..58698955c 100644
+--- a/source/creator/panels/parameters.d
++++ b/source/creator/panels/parameters.d
+@@ -934,7 +934,7 @@ void incParameterView(bool armedParam=false)(size_t idx, Parameter param, string
+                             pasteParameter(param, 2);
+                             incViewportNodeDeformNotifyParamValueChanged();
+                         }
+-                        if (igMenuItem(__("Paste and Horiontal Flip"), "", false, true)) {
++                        if (igMenuItem(__("Paste and Horizontal Flip"), "", false, true)) {
+                             pasteParameter(param, 0);
+                             incViewportNodeDeformNotifyParamValueChanged();
+                         }

@@ -1,0 +1,25 @@
+From 1c71e652d024057e98cd5cb7af52750c5b94785a Mon Sep 17 00:00:00 2001
+From: Grillo del Mal <grillo@delmal.cl>
+Date: Fri, 15 Mar 2024 22:34:53 -0300
+Subject: [PATCH] Always stop an animation at the last frame
+
+---
+ source/inochi2d/core/animation/player.d | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/source/inochi2d/core/animation/player.d b/source/inochi2d/core/animation/player.d
+index c6866c4..b00dc39 100644
+--- a/source/inochi2d/core/animation/player.d
++++ b/source/inochi2d/core/animation/player.d
+@@ -141,6 +141,11 @@ private:
+             _looped++;
+         }
+ 
++        // Always render the last frame
++        if (frame+1 >= frames) {
++            _time = cast(float)(frames-1)*anim.timestep;
++        }
++
+         render();
+ 
+         // Handle stopping animation completely on lead-out end

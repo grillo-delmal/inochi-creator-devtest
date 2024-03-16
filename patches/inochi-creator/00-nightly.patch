@@ -1,0 +1,25 @@
+diff --git a/dub.sdl b/dub.sdl
+index 80836a9..0e51bf9 100644
+--- a/dub.sdl
++++ b/dub.sdl
+@@ -28,6 +28,7 @@ configuration "barebones" {
+ 	targetType "executable"
+ 	subConfiguration "i2d-imgui" "static_dynamicCRT"
+ 	copyFiles "res/NotoSansCJK-Regular-LICENSE" "res/MaterialIcons-LICENSE" "res/OpenDyslexic-LICENSE" "LICENSE"
++	versions "InNightly"
+ }
+ 
+ // Metadata generation
+diff --git a/source/app.d b/source/app.d
+index f93b6b7..da9a0ac 100644
+--- a/source/app.d
++++ b/source/app.d
+@@ -93,7 +93,7 @@ int main(string[] args)
+         version(InNightly) incModalAdd(
+             new Nagscreen(
+                 _("Warning!"), 
+-                _("You're running a nightly build of Inochi Creator!\nInochi Creator may crash unexpectedly and you will likely encounter bugs.\nMake sure to save and back up your work often!"),
++                _("You're running a nightly build of Inochi Creator maintained by Grillo del Mal!\nInochi Creator may crash unexpectedly and you will likely encounter bugs.\nMake sure to save and back up your work often!\n\nIf you like what your see, [buy a stable copy today!](https://inochi2d.com)"),
+                 5
+             )
+         );
