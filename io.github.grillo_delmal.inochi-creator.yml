@@ -36,7 +36,10 @@ modules:
       env:
         DFLAGS: '-g --d-debug'
     build-commands:
+      # Apply lib patches
+      - bash ./patches/apply_patches.sh
       - chmod +x ./gentl.sh; ./gentl.sh
+      # Build
       - dub add-path .flatpak-dub;
         dub build --skip-registry=all --config=meta;
         dub build --skip-registry=all --build=release --config=barebones --debug=InExperimental
@@ -48,6 +51,9 @@ modules:
       - latest-creator.yml
       - type: dir
         path: ./files/inochi-creator/
+      - type: dir
+        path: patches/
+        dest: patches/
 
   - name: Metadata
     buildsystem: simple
