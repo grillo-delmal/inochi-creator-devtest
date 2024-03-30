@@ -63,13 +63,13 @@ modules:
       - bash ./patches/apply_patches.sh
       # Build translations
       - mkdir otl/ ;
-        if [ -n `$(find tl/ -name "*.po" 2>/dev/null)` ] ;
+        chmod +x gentl.sh;
+        if [ $(find tl/ -name "*.po" 2>/dev/null | wc -l) == 0 ] ;
         then
-            echo "No translations, skipping...";
-        else
-            sudo chmod +x gentl.sh;
-            ./gentl.sh;
-            cp out/* otl/;
+          echo "No translations, skipping...";
+        else 
+          ./gentl.sh;
+          mv out/* otl/ ;
         fi
       # Clean up
       - rm -rf $(find .flatpak-dub/ -maxdepth 1 -iname "i2d-imgui*")/.git/modules
