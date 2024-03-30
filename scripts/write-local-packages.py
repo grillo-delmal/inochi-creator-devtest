@@ -5,7 +5,7 @@ import sys
 # HACK: Undocumented way to add local packages directly to the project
 # .This function takes the name and version of a dependency
 # .and adds it to the .dub/packages/local-packages.json
-# .inside inochi-creator
+# .inside the file
 
 out_path = sys.argv[1]
 deps_path = sys.argv[2]
