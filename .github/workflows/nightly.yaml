@@ -634,6 +634,13 @@ jobs:
       env:
         DFLAGS: "-g -force-dwarf-frame-section=false"
       run: |
+        # Look at the propper paths
+        rm .dub/packages/local-packages.json
+        mv .dub/packages/local-packages.mac.json .dub/packages/local-packages.json
+
+        # Set dependencies
+        dub add-path .flatpak-dub
+
         # Build metadata (like version information and icons)
         dub build --config=meta
         
