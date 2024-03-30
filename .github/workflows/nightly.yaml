@@ -596,7 +596,7 @@ jobs:
         name: inochi-creator-source
         path: '.'
       
-    - uses: LunaTheFoxgirl/setup-dlang@v1
+    - uses: dlang-community/setup-dlang@v1.4.0
       with:
         compiler: ldc-latest
   
