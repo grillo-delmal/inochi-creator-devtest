@@ -7,26 +7,49 @@ sdk-extensions:
   - org.freedesktop.Sdk.Extension.llvm14
 command: inochi-creator
 finish-args:
-  - --device=all     #OpenGL rendering, webcams (may be required? not sure)
+  - --device=all          # OpenGL rendering, webcams (may be required? not sure)
   - --socket=fallback-x11
   - --share=ipc
   - --socket=wayland
-  - --filesystem=host     #This is a dev tool, it should probably have as much access to the host as it can. Also needs it for "Recent Files"
-
-## freedesktop ffmpeg extension doesn't provide rawvideo demuxer
-##This extension will be needed in some newer releases, as of https://github.com/Inochi2D/inochi-creator/commit/5d67cded1273aced9033d327a8eb29c6f078a3c0
-#add-extensions:
-#  org.freedesktop.Platform.ffmpeg-full:
-#    version: '22.08'
-#    autodownload: true
-#    autodelete: false
-
+  - --filesystem=host     # This is a dev tool, it should probably have as much access to the host as it can. Also needs it for "Recent Files"
 
 modules:
   - shared-modules/SDL2/SDL2-with-libdecor.json
 
   # Add ffmpeg to support animation recording
   - modules/ffmpeg.yml
+
+  - name: Inochi-Creator-Source
+    buildsystem: simple
+    build-commands:
+      # Apply lib patches
+      - bash ./patches/apply_patches.sh
+      # Build translations
+      - mkdir otl/ ;
+        if [ -n `$(find tl/ -name "*.po" 2>/dev/null)` ] ;
+        then
+            echo "No translations, skipping...";
+        else
+            sudo chmod +x gentl.sh;
+            ./gentl.sh;
+            cp out/* otl/;
+        fi
+      - jq 'map(.path = (["D:/a/inochi-creator-nightly/inochi-creator-nightly"] + (.path | split("/"))[-2:] | join("/")) )' <<<$(<.dub/packages/local-packages.json) > .dub/packages/local-packages.win.json
+      - jq 'map(.path = (["/Users/runner/work/inochi-creator-nightly/inochi-creator-nightly"] + (.path | split("/"))[-2:] | join("/")) )' <<<$(<.dub/packages/local-packages.json) > .dub/packages/local-packages.mac.json
+      - jq 'map(.path = (["/home/runner/work/inochi-creator-nightly/inochi-creator-nightly"] + (.path | split("/"))[-2:] | join("/")) )' <<<$(<.dub/packages/local-packages.json) > .dub/packages/local-packages.linux.json
+      # Clean up
+      - rm -rf $(find .flatpak-dub/ -maxdepth 1 -iname "i2d-imgui*")/.git/modules
+      - rm -rf $(find .flatpak-dub/ -maxdepth 1 -iname "i2d-imgui*")/deps/SDL/test
+
+    sources:
+      - dub-add-local-sources.json
+      - latest-creator.yml
+      - type: dir
+        path: ./files/inochi-creator/
+      - type: dir
+        path: patches/
+        dest: patches/
+
 
   # --- Inochi Creator ---
   - name: Inochi-Creator
@@ -38,13 +61,25 @@ modules:
     build-commands:
       # Apply lib patches
       - bash ./patches/apply_patches.sh
-      - chmod +x ./gentl.sh; ./gentl.sh
+      # Build translations
+      - mkdir otl/ ;
+        if [ -n `$(find tl/ -name "*.po" 2>/dev/null)` ] ;
+        then
+            echo "No translations, skipping...";
+        else
+            sudo chmod +x gentl.sh;
+            ./gentl.sh;
+            cp out/* otl/;
+        fi
+      # Clean up
+      - rm -rf $(find .flatpak-dub/ -maxdepth 1 -iname "i2d-imgui*")/.git/modules
+      - rm -rf $(find .flatpak-dub/ -maxdepth 1 -iname "i2d-imgui*")/deps/SDL/test
       # Build
       - dub add-path .flatpak-dub;
         dub build --skip-registry=all --config=meta;
         dub build --skip-registry=all --build=release --config=barebones --debug=InExperimental
       - install -m 755 ./out/inochi-creator /app/bin/inochi-creator
-      - install -Dm644 ./out/*.mo /app/bin
+      - install -Dm644 ./otl/*.mo /app/bin
 
     sources:
       - dub-add-local-sources.json

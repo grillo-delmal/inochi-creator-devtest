@@ -1,0 +1,19 @@
+diff --git a/deps/CMakeLists.txt b/deps/CMakeLists.txt
+index a8bf132..65474e6 100644
+--- a/deps/CMakeLists.txt
++++ b/deps/CMakeLists.txt
+@@ -66,6 +66,7 @@ endif()
+ 
+ # Libraries are built for Mac/Windows, and consumed via the Package Manager for Linux
+ if (NOT UNIX OR APPLE OR DEFINED USE_SUBMODULE_SOURCES) # Windows and Mac
++    set(FT_DISABLE_HARFBUZZ TRUE CACHE BOOL "" FORCE)
+     add_subdirectory(${freetype_SUBMOD_DIR})
+     set_target_properties(freetype PROPERTIES DEBUG_POSTFIX "")
+     set_target_properties(freetype PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${OutputDirectory})
+diff --git a/deps/SDL b/deps/SDL
+index 847539a..031912c 160000
+--- a/deps/SDL
++++ b/deps/SDL
+@@ -1 +1 @@
+-Subproject commit 847539afebe1019c2e1320eccfbe2334d30a2bcc
++Subproject commit 031912c4b6c5db80b443f04aa56fec3e4e645153

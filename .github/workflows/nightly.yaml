@@ -1,0 +1,718 @@
+# Based on https://raw.githubusercontent.com/gasinvein/proton-flatpak/7962b87cf0d079998ea861e1a358fa93d63af7e5/.github/workflows/flatpak.yml
+name: Nightly Build
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  APP_ID: io.github.grillo_delmal.inochi-creator
+  MANIFEST_PATH: io.github.grillo_delmal.inochi-creator.yml
+  FLATPAK_BUNDLE: inochi-creator
+  FLATPAK_BRANCH: devtest
+  DESTINATION_GITHUB_USERNAME: grillo-delmal 
+  DESTINATION_REPOSITORY_NAME: inochi2d-flatpak-devtest
+  FLATPAK_BUILD_DIR: build-dir
+  FLATPAK_BUILD_REPO: build-repo
+
+jobs:
+  build-base:
+    runs-on: ubuntu-latest
+    container:
+      image: bilelmoussaoui/flatpak-github-actions:freedesktop-22.08
+      options: --privileged
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Dump canonical manifest
+      run: |
+        set -e
+        flatpak-builder --show-manifest ${MANIFEST_PATH} > canonical-manifest.json
+
+    - name: Download flatpak SDK and sources
+      run: |
+        set -e
+        flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+        flatpak-builder --default-branch=${FLATPAK_BRANCH} --install-deps-from=flathub --install-deps-only --user /dev/null ${MANIFEST_PATH}
+        flatpak-builder --default-branch=${FLATPAK_BRANCH} --download-only /dev/null ${MANIFEST_PATH}
+
+    - name: Prime cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          .flatpak-builder/ccache
+        key: flatpak-builder-${{ hashFiles('canonical-manifest.json') }}
+        restore-keys: |
+          flatpak-builder-
+
+    - name: Build flatpak
+      run: |
+        set -e
+        flatpak-builder --default-branch=${FLATPAK_BRANCH} --disable-updates --disable-download --ccache --sandbox --keep-build-dirs --repo=${FLATPAK_BUILD_REPO} ${FLATPAK_BUILD_DIR} ${MANIFEST_PATH}
+
+    - name: Upload flatpak repo
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.FLATPAK_BUILD_REPO }}
+        path: |
+          ${{ env.FLATPAK_BUILD_REPO }}
+          !${{ env.FLATPAK_BUILD_REPO }}/.lock
+
+    - name: Upload source
+      uses: actions/upload-artifact@v4
+      with:
+        name: inochi-creator-source
+        path: .flatpak-builder/build/Inochi-Creator-Source-1/*
+        retention-days: 1
+
+  publish-source-nightly:
+    runs-on: ubuntu-latest
+    needs: build-base
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Download source files
+      uses: actions/download-artifact@v4
+      with:
+        name: inochi-creator-source
+        path: 'out/'
+
+    - name: Archive Zip
+      uses: thedoctor0/zip-release@main
+      with:
+        type: 'zip'
+        filename: 'inochi-creator-source.zip'
+        directory: 'out/'
+        path: '.'
+
+    - name: 🏷️ Create/update nightly tag
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.git.createRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: 'refs/tags/nightly',
+            sha: context.sha
+          }).catch(err => {
+            if (err.status !== 422) throw err;
+            github.rest.git.updateRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'tags/nightly',
+              sha: context.sha
+            });
+          })
+
+    - name: Release to nightly tag
+      uses: softprops/action-gh-release@v2
+      with:
+        name: 'Unofficial Nightly Build'
+        tag_name: nightly
+        files: 'out/inochi-creator-source.zip'
+
+  publish-source-test:
+    runs-on: ubuntu-latest
+    needs: build-base
+    if: github.ref != 'refs/heads/main'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Download source files
+      uses: actions/download-artifact@v4
+      with:
+        name: inochi-creator-source
+        path: 'out/'
+
+    - name: Archive Zip
+      uses: thedoctor0/zip-release@main
+      with:
+        type: 'zip'
+        filename: 'inochi-creator-source.zip'
+        directory: 'out/'
+        path: '.'
+
+    - name: 🏷️ Create/update testing tag
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.git.createRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: 'refs/tags/testing',
+            sha: context.sha
+          }).catch(err => {
+            if (err.status !== 422) throw err;
+            github.rest.git.updateRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'tags/testing',
+              sha: context.sha
+            });
+          })
+
+    - name: Release to other tag
+      uses: softprops/action-gh-release@v2
+      with:
+        name: 'Test Build'
+        tag_name: testing
+        files: 'out/inochi-creator-source.zip'
+
+  publish-flatpak-bundle:
+    runs-on: ubuntu-latest
+    needs: build-base
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install flatpak
+      run: |
+        set -e
+        sudo apt-get update && sudo apt-get -y --no-install-recommends install flatpak
+
+    - name: Download flatpak repo
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ env.FLATPAK_BUILD_REPO }}
+        path: ${{ env.FLATPAK_BUILD_REPO }}
+
+    - name: Create flatpak bundle
+      run: |
+        set -e
+        mkdir -p ${FLATPAK_BUILD_REPO}/{extensions,refs/{mirrors,remotes},state,tmp/cache}
+        flatpak build-bundle --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo ${FLATPAK_BUILD_REPO} ${FLATPAK_BUNDLE}.flatpak ${APP_ID} ${FLATPAK_BRANCH}
+        flatpak build-bundle --runtime ${FLATPAK_BUILD_REPO} ${FLATPAK_BUNDLE}.debug.flatpak ${APP_ID/-/_}.Debug ${FLATPAK_BRANCH}
+
+    - name: Upload flatpak bundle
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.FLATPAK_BUNDLE }}
+        path: ${{ env.FLATPAK_BUNDLE }}.flatpak
+
+    - name: Upload flatpak bundle for debug
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.FLATPAK_BUNDLE }}.debug
+        path: ${{ env.FLATPAK_BUNDLE }}.debug.flatpak
+
+  publish-flatpak-bundle-nightly:
+    runs-on: ubuntu-latest
+    needs: publish-flatpak-bundle
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Download flatpak bundle
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ env.FLATPAK_BUNDLE }}
+        path: 'out/'
+
+    - name: Download flatpak debug bundle
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ env.FLATPAK_BUNDLE }}.debug
+        path: 'out/'
+
+    - name: Release to nightly tag
+      uses: softprops/action-gh-release@v2
+      with:
+        name: 'Unofficial Nightly Build'
+        tag_name: nightly
+        files: |
+          out/${{ env.FLATPAK_BUNDLE }}.flatpak
+          out/${{ env.FLATPAK_BUNDLE }}.debug.flatpak
+
+  publish-flatpak-bundle-test:
+    runs-on: ubuntu-latest
+    needs: publish-flatpak-bundle
+    if: github.ref != 'refs/heads/main'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Download flatpak bundle
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ env.FLATPAK_BUNDLE }}
+        path: 'out/'
+
+    - name: Download flatpak debug bundle
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ env.FLATPAK_BUNDLE }}.debug
+        path: 'out/'
+
+    - name: Release to other tag
+      uses: softprops/action-gh-release@v2
+      with:
+        name: 'Test Build'
+        tag_name: testing
+        files: |
+          out/${{ env.FLATPAK_BUNDLE }}.flatpak
+          out/${{ env.FLATPAK_BUNDLE }}.debug.flatpak
+
+  publish-flatpak-oci:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: build-base
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install flatpak and libcontainers tools
+      run: |
+        set -e
+        . /etc/os-release
+        sudo apt-get update && sudo apt-get -y --no-install-recommends install skopeo flatpak jq
+
+    - name: Download flatpak repo
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ env.FLATPAK_BUILD_REPO }}
+        path: ${{ env.FLATPAK_BUILD_REPO }}
+
+    - name: Create OCI bundle
+      run: |
+        set -e
+        mkdir -p ${FLATPAK_BUILD_REPO}/{extensions,refs/{mirrors,remotes},state,tmp/cache}
+        flatpak build-bundle \
+          --oci \
+          --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo \
+          ${FLATPAK_BUILD_REPO} ${FLATPAK_BUNDLE} ${APP_ID} ${FLATPAK_BRANCH}
+        flatpak build-bundle \
+          --oci \
+          --runtime \
+          ${FLATPAK_BUILD_REPO} ${FLATPAK_BUNDLE}.debug ${APP_ID/-/_}.Debug ${FLATPAK_BRANCH}
+
+    - name: Publish OCI image
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT }}
+        REGISTRY_AUTH_FILE: /tmp/auth.json
+      run: |
+        export IMAGE_REPOSITORY=$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')
+        set -e
+        skopeo login --username "${{ github.actor }}" --password-stdin ghcr.io <<<$GITHUB_TOKEN
+        skopeo copy \
+          oci:${FLATPAK_BUNDLE} \
+          docker://ghcr.io/${IMAGE_REPOSITORY}:$FLATPAK_BRANCH
+        skopeo copy \
+          oci:${FLATPAK_BUNDLE}.debug \
+          docker://ghcr.io/${IMAGE_REPOSITORY}-debug:$FLATPAK_BRANCH
+
+  update-flatpak-oci-index:
+    runs-on: ubuntu-latest
+    needs: publish-flatpak-oci
+
+    steps:
+    - run: echo "REPO_NAME=${{ github.event.repository.name }}" >> $GITHUB_ENV
+
+    - name: Update static index
+      env:
+        REGISTRY_AUTH_FILE: /tmp/auth.json
+      run: |
+        export IMAGE_REPOSITORY=$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')
+        set -x
+        git clone -b main https://github.com/$DESTINATION_GITHUB_USERNAME/$DESTINATION_REPOSITORY_NAME.git gh-pages
+        mkdir -p ./gh-pages/repos
+        skopeo inspect docker://ghcr.io/${IMAGE_REPOSITORY}:$FLATPAK_BRANCH | \
+          jq --arg github_repository "${GITHUB_REPOSITORY}" '. as $img | { "Name": $github_repository, "Images": [$img] }' > \
+          ./gh-pages/repos/${REPO_NAME}.o
+        [ -s ./gh-pages/repos/${REPO_NAME}.o ] && \
+          mv ./gh-pages/repos/${REPO_NAME}.o ./gh-pages/repos/${REPO_NAME} || \
+          rm ./gh-pages/repos/${REPO_NAME}.o
+        skopeo inspect docker://ghcr.io/${IMAGE_REPOSITORY}-debug:$FLATPAK_BRANCH | \
+          jq --arg github_repository "${GITHUB_REPOSITORY}-debug" '. as $img | { "Name": $github_repository, "Images": [$img] }' > \
+          ./gh-pages/repos/${REPO_NAME}-debug.o
+        [ -s ./gh-pages/repos/${REPO_NAME}-debug.o ] && \
+          mv ./gh-pages/repos/${REPO_NAME}-debug.o ./gh-pages/repos/${REPO_NAME}-debug || \
+          rm ./gh-pages/repos/${REPO_NAME}-debug.o
+        git -C ./gh-pages add .
+
+    - name: Check for changes
+      id: is-updated 
+      run: |
+        set -x
+        git -C ./gh-pages status -s -uno
+        ls ./gh-pages/repos/
+        [ -z "$(git -C ./gh-pages status -s -uno)" ] || echo "updated=true" >> $GITHUB_OUTPUT
+
+    - name: Push to repository
+      if: steps.is-updated.outputs.updated
+      uses: cpina/github-action-push-to-another-repository@main
+      env:
+        API_TOKEN_GITHUB: ${{ secrets.PAT }}
+      with:
+        source-directory: 'gh-pages'
+        destination-github-username: ${{ env.DESTINATION_GITHUB_USERNAME }}
+        destination-repository-name: ${{ env.DESTINATION_REPOSITORY_NAME }}
+        user-email: github-actions[bot]@users.noreply.github.com
+        commit-message: Update index
+        target-branch: main
+
+  build-linux-zip:
+    runs-on: ubuntu-20.04
+    needs: build-base
+
+    steps:
+    - name: Download source
+      continue-on-error: true
+      uses: actions/download-artifact@v4
+      with:
+        name: inochi-creator-source
+        path: '.'
+      
+    - uses: dlang-community/setup-dlang@v1
+      with:
+        compiler: ldc-latest
+  
+    - name: 'Get dependencies'
+      run: |
+        rm .dub/packages/local-packages.json
+        mv .dub/packages/local-packages.linux.json .dub/packages/local-packages.json
+
+        dub add-path .flatpak-dub
+
+        sudo apt install libsdl2-dev libfreetype6-dev
+    
+    - name: 'Build Inochi Creator'
+      run: |
+        export DFLAGS='-g --d-debug'
+
+        # Build metadata (like version information and icons)
+        dub build --config=meta
+
+        # Build the project, with its main file included, without unittests
+        dub build --skip-registry=all --build=debug --config=barebones
+
+        mkdir -p out/i18n/
+        cp otl/* out/i18n/
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: inochi-creator-linux-x86_64
+        path: 'out/'
+
+  publish-linux-zip-nightly:
+    runs-on: ubuntu-latest
+    needs: build-linux-zip
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Download linux files
+      uses: actions/download-artifact@v4
+      with:
+        name: inochi-creator-linux-x86_64
+        path: 'out/'
+
+    - name: Archive Zip
+      uses: thedoctor0/zip-release@main
+      with:
+        type: 'zip'
+        filename: 'inochi-creator-linux-x86_64.zip'
+        directory: 'out/'
+        path: '*'
+
+    - name: Release to nightly tag
+      uses: softprops/action-gh-release@v2
+      with:
+        name: 'Unofficial Nightly Build'
+        tag_name: nightly
+        files: 'out/inochi-creator-linux-x86_64.zip'
+
+  publish-linux-zip-test:
+    runs-on: ubuntu-latest
+    needs: build-linux-zip
+    if: github.ref != 'refs/heads/main'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Download linux files
+      uses: actions/download-artifact@v4
+      with:
+        name: inochi-creator-linux-x86_64
+        path: 'out/'
+
+    - name: Archive Zip
+      uses: thedoctor0/zip-release@main
+      with:
+        type: 'zip'
+        filename: 'inochi-creator-linux-x86_64.zip'
+        directory: 'out/'
+        path: '*'
+
+    - name: Release to other tag
+      uses: softprops/action-gh-release@v2
+      with:
+        name: 'Test Build'
+        tag_name: testing
+        files: 'out/inochi-creator-linux-x86_64.zip'
+
+  build-windows-zip:
+    runs-on: windows-latest
+    needs: build-base
+
+    steps:
+    - uses: dlang-community/setup-dlang@v1
+      with:
+        compiler: ldc-latest
+        
+    - name: Download source
+      continue-on-error: true
+      uses: actions/download-artifact@v4
+      with:
+        name: inochi-creator-source
+        path: '.'
+      
+    - name: 'Get dependencies'
+      run: |
+        rm .dub/packages/local-packages.json
+        mv .dub/packages/local-packages.win.json .dub/packages/local-packages.json
+
+        dub add-path .flatpak-dub
+
+    - name: 'Build Inochi Creator'
+      run: |
+        function Invoke-VSDevEnvironment {
+        $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+              $installationPath = & $vswhere -prerelease -legacy -latest -property installationPath
+              $Command = Join-Path $installationPath "Common7\Tools\vsdevcmd.bat"
+            & "${env:COMSPEC}" /s /c "`"$Command`" -no_logo && set" | Foreach-Object {
+                  if ($_ -match '^([^=]+)=(.*)') {
+                      [System.Environment]::SetEnvironmentVariable($matches[1], $matches[2])
+                  }
+              }
+          }
+          Invoke-VSDevEnvironment
+
+          # Build metadata (like version information and icons)
+          dub build --skip-registry=all --config=meta
+
+          # Build the project, with its main file included, without unittests
+          $Env:DFLAGS = '-g'
+          dub build --skip-registry=all --build=debug --config=win32-nightly --debug=InExperimental
+
+          mkdir -p out/i18n/
+          cp otl/* out/i18n/
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: inochi-creator-win32-x86_64
+        path: 'out/'
+
+  publish-windows-zip-nightly:
+    runs-on: ubuntu-latest
+    needs: build-windows-zip
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Download windows files
+      uses: actions/download-artifact@v4
+      with:
+        name: inochi-creator-win32-x86_64
+        path: 'out/'
+
+    - name: Archive Zip
+      uses: thedoctor0/zip-release@main
+      with:
+        type: 'zip'
+        filename: 'inochi-creator-win32-x86_64.zip'
+        directory: 'out/'
+        path: '*'
+
+    - name: Release to nightly tag
+      uses: softprops/action-gh-release@v2
+      with:
+        name: 'Unofficial Nightly Build'
+        tag_name: nightly
+        files: 'out/inochi-creator-win32-x86_64.zip'
+
+
+  publish-windows-zip-test:
+    runs-on: ubuntu-latest
+    needs: build-windows-zip
+    if: github.ref != 'refs/heads/main'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Download windows files
+      uses: actions/download-artifact@v4
+      with:
+        name: inochi-creator-win32-x86_64
+        path: 'out/'
+
+    - name: Archive Zip
+      uses: thedoctor0/zip-release@main
+      with:
+        type: 'zip'
+        filename: 'inochi-creator-win32-x86_64.zip'
+        directory: 'out/'
+        path: '*'
+
+    - name: Release to other tag
+      uses: softprops/action-gh-release@v2
+      with:
+        name: 'Test Build'
+        tag_name: testing
+        files: 'out/inochi-creator-win32-x86_64.zip'
+
+  build-macos-dmg:
+    runs-on: macos-14
+    needs: build-base
+
+    steps:
+    - name: Download source
+      continue-on-error: true
+      uses: actions/download-artifact@v4
+      with:
+        name: inochi-creator-source
+        path: '.'
+      
+    - uses: LunaTheFoxgirl/setup-dlang@v1
+      with:
+        compiler: ldc-latest
+  
+    - name: "Prepare for DMG packing"
+      continue-on-error: true
+      run: |
+        export HOMEBREW_NO_INSTALL_CLEANUP=1
+        export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+        brew update
+        brew install create-dmg gettext
+
+    - name: "Remove conflicting brew packages"
+      continue-on-error: true
+      run: |
+        # Remove conflicting brew items
+        deps=( libpng brotli harfbuzz)
+        for dep in "${deps[@]}"; do
+          brew remove --ignore-dependencies $dep
+        done
+
+    - name: "Remove final conflicting files"
+      continue-on-error: true
+      run: |
+        # Delete fake harfbuzz if need be
+        if [ -f "/usr/local/lib/libharfbuzz.dylib" ]; then
+          sudo rm -r /usr/local/lib/libharfbuzz.dylib
+        fi
+
+        # And the .a for it as well
+        if [ -f "/usr/local/lib/libharfbuzz.a" ]; then
+          sudo rm -r /usr/local/lib/libharfbuzz.a
+        fi
+
+    - name: 'Build Inochi Creator'
+      env:
+        DFLAGS: "-g -force-dwarf-frame-section=false"
+      run: |
+        # Build metadata (like version information and icons)
+        dub build --config=meta
+        
+        # First build ARM64 version...
+        echo "Building arm64 binary..."
+        dub build --build=release --config=osx-full --arch=arm64-apple-macos
+        mv "out/Inochi Creator.app/Contents/MacOS/inochi-creator" "out/Inochi Creator.app/Contents/MacOS/inochi-creator-arm64"
+
+        # Then the X86_64 version...
+        echo "Building x86_64 binary..."
+        dub build --build=release --config=osx-full --arch=x86_64-apple-macos
+        mv "out/Inochi Creator.app/Contents/MacOS/inochi-creator" "out/Inochi Creator.app/Contents/MacOS/inochi-creator-x86_64"
+
+        # Glue them together with lipo
+        echo "Gluing them together..."
+        lipo "out/Inochi Creator.app/Contents/MacOS/inochi-creator-x86_64" "out/Inochi Creator.app/Contents/MacOS/inochi-creator-arm64" -output "out/Inochi Creator.app/Contents/MacOS/inochi-creator" -create
+
+        # Print some nice info
+        echo "Done!"
+        lipo -info "out/Inochi Creator.app/Contents/MacOS/inochi-creator"
+
+        # Cleanup and bundle
+        echo "Cleaning up..."
+        rm "out/Inochi Creator.app/Contents/MacOS/inochi-creator-x86_64" "out/Inochi Creator.app/Contents/MacOS/inochi-creator-arm64"
+        ./build-aux/osx/osxbundle.sh
+
+        mkdir -p out/i18n/
+        cp otl/* out/i18n/
+
+    - name: 'Build DMG'
+      run: |
+        sh ./build-aux/osx/gendmg.sh
+
+    - name: Upload dmg
+      uses: actions/upload-artifact@v4
+      with:
+        name: inochi-creator-macos
+        path: 'out/'
+
+  publish-macos-dmg-nightly:
+    runs-on: ubuntu-latest
+    needs: build-macos-dmg
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Download macos files
+      uses: actions/download-artifact@v4
+      with:
+        name: inochi-creator-macos
+        path: 'out/'
+
+    - name: Release to nightly tag
+      uses: softprops/action-gh-release@v2
+      with:
+        name: 'Unofficial Nightly Build'
+        tag_name: nightly
+        files: 'out/Install_Inochi_Session.dmg'
+
+  publish-macos-dmg-test:
+    runs-on: ubuntu-latest
+    needs: build-macos-dmg
+    if: github.ref != 'refs/heads/main'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Download macos files
+      uses: actions/download-artifact@v4
+      with:
+        name: inochi-creator-macos
+        path: 'out/'
+
+    - name: Release to other tag
+      uses: softprops/action-gh-release@v2
+      with:
+        name: 'Test Build'
+        tag_name: testing
+        files: 'out/Install_Inochi_Session.dmg'
