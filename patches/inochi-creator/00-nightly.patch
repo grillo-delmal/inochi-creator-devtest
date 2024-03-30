@@ -1,5 +1,5 @@
 diff --git a/dub.sdl b/dub.sdl
-index 80836a9..0e51bf9 100644
+index 80836a9..a0c3b62 100644
 --- a/dub.sdl
 +++ b/dub.sdl
 @@ -28,6 +28,7 @@ configuration "barebones" {
@@ -10,8 +10,34 @@ index 80836a9..0e51bf9 100644
  }
  
  // Metadata generation
+@@ -105,7 +106,7 @@ configuration "linux-nightly" {
+ 	dependency "dportals" version="~>0.1.0"
+ 	targetType "executable"
+ 	subConfiguration "i2d-imgui" "static_dynamicCRT"
+-	versions "InBranding" "InNightly"
++	versions "InNightly"
+ }
+ 
+ // macOS nightly build
+@@ -116,7 +117,7 @@ configuration "osx-nightly" {
+ 	subConfiguration "i2d-imgui" "dynamic_dynamicCRT"
+ 	dflags "-force-dwarf-frame-section=false"
+ 	lflags "-rpath" "@executable_path/../Frameworks" "-rpath" "@executable_path/."
+-	versions "InBranding" "InNightly"
++	versions "InNightly"
+ }
+ 
+ // Windows nightly build
+@@ -126,5 +127,5 @@ configuration "win32-nightly" {
+ 	subConfiguration "i2d-imgui" "static_staticCRT"
+ 	lflags "/SUBSYSTEM:windows" "/ENTRY:mainCRTStartup" platform="windows-dmd"
+ 	sourceFiles "build-aux\\windows\\inochi-creator.res"
+-	versions "InBranding" "InNightly"
++	versions "InNightly"
+ }
+\ No newline at end of file
 diff --git a/source/app.d b/source/app.d
-index f93b6b7..da9a0ac 100644
+index f93b6b7..bc9415e 100644
 --- a/source/app.d
 +++ b/source/app.d
 @@ -93,7 +93,7 @@ int main(string[] args)
@@ -19,7 +45,7 @@ index f93b6b7..da9a0ac 100644
              new Nagscreen(
                  _("Warning!"), 
 -                _("You're running a nightly build of Inochi Creator!\nInochi Creator may crash unexpectedly and you will likely encounter bugs.\nMake sure to save and back up your work often!"),
-+                _("You're running a nightly build of Inochi Creator maintained by Grillo del Mal!\nInochi Creator may crash unexpectedly and you will likely encounter bugs.\nMake sure to save and back up your work often!\n\nIf you like what your see, [buy a stable copy today!](https://inochi2d.com)"),
++                _("You're running a nightly build of Inochi Creator maintained by Grillo del Mal!\nIt might have some weird patches too, so use at your own risk.\nInochi Creator may crash unexpectedly and you will likely encounter bugs.\nMake sure to save and back up your work often!\n\nIf you like what your see, [buy a copy from the official release today!](https://inochi2d.com)"),
                  5
              )
          );

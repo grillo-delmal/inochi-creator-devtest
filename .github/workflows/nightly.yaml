@@ -596,7 +596,7 @@ jobs:
         name: inochi-creator-source
         path: '.'
       
-    - uses: LunaTheFoxgirl/setup-dlang@v1
+    - uses: dlang-community/setup-dlang@v1.4.0
       with:
         compiler: ldc-latest
   
@@ -634,9 +634,16 @@ jobs:
       env:
         DFLAGS: "-g -force-dwarf-frame-section=false"
       run: |
+        # Look at the propper paths
+        rm .dub/packages/local-packages.json
+        mv .dub/packages/local-packages.mac.json .dub/packages/local-packages.json
+
+        # Set dependencies
+        dub add-path .flatpak-dub
+
         # Build metadata (like version information and icons)
         dub build --config=meta
-        
+
         # First build ARM64 version...
         echo "Building arm64 binary..."
         dub build --build=release --config=osx-full --arch=arm64-apple-macos
@@ -658,7 +665,7 @@ jobs:
         # Cleanup and bundle
         echo "Cleaning up..."
         rm "out/Inochi Creator.app/Contents/MacOS/inochi-creator-x86_64" "out/Inochi Creator.app/Contents/MacOS/inochi-creator-arm64"
-        ./build-aux/osx/osxbundle.sh
+        sh ./build-aux/osx/osxbundle.sh
 
         mkdir -p out/i18n/
         cp otl/* out/i18n/

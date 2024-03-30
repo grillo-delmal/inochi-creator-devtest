@@ -26,13 +26,13 @@ modules:
       - bash ./patches/apply_patches.sh
       # Build translations
       - mkdir otl/ ;
-        if [ -n `$(find tl/ -name "*.po" 2>/dev/null)` ] ;
+        chmod +x gentl.sh;
+        if [ $(find tl/ -name "*.po" 2>/dev/null | wc -l) == 0 ] ;
         then
-            echo "No translations, skipping...";
-        else
-            sudo chmod +x gentl.sh;
-            ./gentl.sh;
-            cp out/* otl/;
+          echo "No translations, skipping...";
+        else 
+          ./gentl.sh;
+          mv out/* otl/ ;
         fi
       - jq 'map(.path = (["D:/a/inochi-creator-nightly/inochi-creator-nightly"] + (.path | split("/"))[-2:] | join("/")) )' <<<$(<.dub/packages/local-packages.json) > .dub/packages/local-packages.win.json
       - jq 'map(.path = (["/Users/runner/work/inochi-creator-nightly/inochi-creator-nightly"] + (.path | split("/"))[-2:] | join("/")) )' <<<$(<.dub/packages/local-packages.json) > .dub/packages/local-packages.mac.json
