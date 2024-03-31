@@ -111,20 +111,6 @@
         "disable-shallow-clone": false
     },
     {
-        "type": "git",
-        "url": "https://github.com/Inochi2D/i2d-imgui.git",
-        "commit": "e34f8ba04c0085be7ee83a8df200cf2ffb30bfd3",
-        "dest": ".flatpak-dub/i2d-imgui-0.8.0+build.4.ge34f8ba",
-        "disable-shallow-clone": true
-    },
-    {
-        "type": "git",
-        "url": "https://github.com/Inochi2D/i2d-opengl.git",
-        "commit": "985ab89dd82aafc7f0733e855096a38b4a612762",
-        "dest": ".flatpak-dub/i2d-opengl-1.0.0",
-        "disable-shallow-clone": true
-    },
-    {
         "type": "archive",
         "url": "https://code.dlang.org/packages/imagefmt/2.1.2.zip",
         "sha256": "10f4182efc4fc3846561ca702b3207493f736639498b2dc61a3adcee2bb18736",
