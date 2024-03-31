@@ -670,56 +670,8 @@ jobs:
         mkdir -p out/i18n/
         cp otl/* out/i18n/
 
-    - name: 'Build DMG'
-      run: |
-        sh ./build-aux/osx/gendmg.sh
-
-    - name: Upload dmg
+    - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: inochi-creator-macos
         path: 'out/'
-
-  publish-macos-dmg-nightly:
-    runs-on: ubuntu-latest
-    needs: build-macos-dmg
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    
-    - name: Download macos files
-      uses: actions/download-artifact@v4
-      with:
-        name: inochi-creator-macos
-        path: 'out/'
-
-    - name: Release to nightly tag
-      uses: softprops/action-gh-release@v2
-      with:
-        name: 'Unofficial Nightly Build'
-        tag_name: nightly
-        files: 'out/Install_Inochi_Session.dmg'
-
-  publish-macos-dmg-test:
-    runs-on: ubuntu-latest
-    needs: build-macos-dmg
-    if: github.ref != 'refs/heads/main'
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    
-    - name: Download macos files
-      uses: actions/download-artifact@v4
-      with:
-        name: inochi-creator-macos
-        path: 'out/'
-
-    - name: Release to other tag
-      uses: softprops/action-gh-release@v2
-      with:
-        name: 'Test Build'
-        tag_name: testing
-        files: 'out/Install_Inochi_Session.dmg'
