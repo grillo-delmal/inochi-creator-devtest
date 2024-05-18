@@ -195,7 +195,7 @@
     {
         "type": "archive",
         "url": "https://code.dlang.org/packages/silly/1.1.1.zip",
-        "sha256": "4bce750403f703ae1596eecc54c42b67716aaeb11c97b9bb847140f497bd15d0",
+        "sha256": "1f466d0f7418ed6c0ab57eb3a41aafb85cf2349f946e4d0ab8b5869bfb7e8d31",
         "dest": ".flatpak-dub/silly-1.1.1"
     },
     {
