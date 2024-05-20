@@ -119,7 +119,7 @@
     {
         "type": "git",
         "url": "https://github.com/Inochi2D/inmath.git",
-        "commit": "a052db16f268218238d694b5013e38e0de658192",
+        "commit": "6ee33a0e160bcf0c0286a16e232feeeae2306548",
         "dest": ".flatpak-dub/inmath-1.0.8",
         "disable-shallow-clone": false
     },
@@ -195,7 +195,7 @@
     {
         "type": "archive",
         "url": "https://code.dlang.org/packages/silly/1.1.1.zip",
-        "sha256": "1f466d0f7418ed6c0ab57eb3a41aafb85cf2349f946e4d0ab8b5869bfb7e8d31",
+        "sha256": "4bce750403f703ae1596eecc54c42b67716aaeb11c97b9bb847140f497bd15d0",
         "dest": ".flatpak-dub/silly-1.1.1"
     },
     {
