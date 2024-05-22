@@ -1,0 +1,38 @@
+diff --git a/source/inochi2d/core/nodes/drivers/package.d b/source/inochi2d/core/nodes/drivers/package.d
+index 9a46846..01046b6 100644
+--- a/source/inochi2d/core/nodes/drivers/package.d
++++ b/source/inochi2d/core/nodes/drivers/package.d
+@@ -17,10 +17,8 @@ public import inochi2d.core.nodes.drivers.simplephysics;
+ */
+ @TypeId("Driver")
+ abstract class Driver : Node {
+-private:
+-    this() { }
+-
+ protected:
++    this() { }
+     /**
+         Constructs a new Driver node
+     */
+diff --git a/source/inochi2d/core/nodes/package.d b/source/inochi2d/core/nodes/package.d
+index 6090355..5045361 100644
+--- a/source/inochi2d/core/nodes/package.d
++++ b/source/inochi2d/core/nodes/package.d
+@@ -74,8 +74,6 @@ void inClearUUIDs() {
+ @TypeId("Node")
+ class Node : ISerializable {
+ private:
+-    this() { }
+-
+     @Ignore
+     Puppet puppet_;
+ 
+@@ -98,6 +96,8 @@ private:
+     string nodePath_;
+ 
+ protected:
++    this() { }
++
+     bool preProcessed  = false;
+     bool postProcessed = false;
+ 
