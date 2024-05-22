@@ -136,6 +136,11 @@ fi
 REQ_SEMVER_TAG=v$(grep -oP 'semver.*~>\K(.*)(?=")' ./deps/gitver/dub.sdl)
 git -C ./deps/semver/ checkout "$REQ_SEMVER_TAG" 2>/dev/null
 
+# Make sure to apply patches beforehand
+popd
+bash ./patches/apply_patches.sh dep.build/deps dep.build/inochi-creator
+pushd dep.build
+
 echo "### Build Stage"
 
 # Add the dependencies to the inochi creator's local-packages file

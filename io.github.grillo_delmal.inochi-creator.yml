@@ -23,7 +23,7 @@ modules:
     buildsystem: simple
     build-commands:
       # Apply lib patches
-      - bash ./patches/apply_patches.sh
+      - bash ./patches/apply_patches.sh .flatpak-dub .
       # Build translations
       - mkdir otl/ ;
         chmod +x gentl.sh;
@@ -60,7 +60,7 @@ modules:
         DFLAGS: '-g --d-debug'
     build-commands:
       # Apply lib patches
-      - bash ./patches/apply_patches.sh
+      - bash ./patches/apply_patches.sh .flatpak-dub .
       # Build translations
       - mkdir otl/ ;
         chmod +x gentl.sh;
