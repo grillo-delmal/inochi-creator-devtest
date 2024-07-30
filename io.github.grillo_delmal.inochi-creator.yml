@@ -77,7 +77,7 @@ modules:
       - dub add-path .flatpak-dub;
         dub build --skip-registry=all --config=meta;
         dub build --skip-registry=all --build=release --config=barebones --debug=InExperimental
-      - install -m 755 ./out/inochi-creator /app/bin/inochi-creator
+      - install -Dm 755 ./out/inochi-creator /app/bin/inochi-creator
       - install -Dm644 ./otl/*.mo /app/bin
 
     sources:
