@@ -22,9 +22,6 @@ cleanup-commands:
 
 modules:
 
-  # Add ffmpeg to support animation recording
-  - modules/ffmpeg.yml
-
   - name: Inochi-Creator-Source
     buildsystem: simple
     build-commands:
