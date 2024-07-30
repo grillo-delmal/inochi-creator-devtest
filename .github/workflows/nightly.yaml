@@ -396,7 +396,7 @@ jobs:
         export DFLAGS='-g --d-debug'
 
         # Build metadata (like version information and icons)
-        dub build --config=meta
+        dub build --skip-registry=all --config=meta
 
         # Build the project, with its main file included, without unittests
         dub build --skip-registry=all --build=debug --config=barebones
