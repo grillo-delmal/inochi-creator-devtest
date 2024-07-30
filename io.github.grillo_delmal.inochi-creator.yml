@@ -1,10 +1,10 @@
 id: io.github.grillo_delmal.inochi-creator
 runtime: org.freedesktop.Platform
-runtime-version: '22.08'
+runtime-version: '23.08'
 sdk: org.freedesktop.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.ldc
-  - org.freedesktop.Sdk.Extension.llvm14
+  - org.freedesktop.Sdk.Extension.llvm16
 command: inochi-creator
 finish-args:
   - --device=all          # OpenGL rendering, webcams (may be required? not sure)
@@ -14,7 +14,6 @@ finish-args:
   - --filesystem=host     # This is a dev tool, it should probably have as much access to the host as it can. Also needs it for "Recent Files"
 
 modules:
-  - shared-modules/SDL2/SDL2-with-libdecor.json
 
   # Add ffmpeg to support animation recording
   - modules/ffmpeg.yml
