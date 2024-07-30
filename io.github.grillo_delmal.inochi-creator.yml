@@ -5,6 +5,11 @@ sdk: org.freedesktop.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.ldc
   - org.freedesktop.Sdk.Extension.llvm16
+add-extensions:
+  - org.freedesktop.Platform.ffmpeg-full:
+    version: '23.08'
+    directory: lib/ffmpeg
+    add-ld-path: .
 command: inochi-creator
 finish-args:
   - --device=all          # OpenGL rendering, webcams (may be required? not sure)
@@ -12,6 +17,8 @@ finish-args:
   - --share=ipc
   - --socket=wayland
   - --filesystem=host     # This is a dev tool, it should probably have as much access to the host as it can. Also needs it for "Recent Files"
+cleanup-commands:
+  - mkdir -p ${FLATPAK_DEST}/lib/ffmpeg
 
 modules:
 
@@ -77,7 +84,7 @@ modules:
       - dub add-path .flatpak-dub;
         dub build --skip-registry=all --config=meta;
         dub build --skip-registry=all --build=release --config=barebones --debug=InExperimental
-      - install -m 755 ./out/inochi-creator /app/bin/inochi-creator
+      - install -Dm 755 ./out/inochi-creator /app/bin/inochi-creator
       - install -Dm644 ./otl/*.mo /app/bin
 
     sources:
