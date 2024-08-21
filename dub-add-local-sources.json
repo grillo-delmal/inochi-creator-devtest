@@ -2,7 +2,7 @@
     {
         "type": "git",
         "url": "https://github.com/Inochi2D/gitver.git",
-        "commit": "f0faefe8a67db2acc93640692e6f1a4336e31b85",
+        "commit": "a00b80626d2e3b77efc3fd3a4caf03880961b40d",
         "dest": ".flatpak-dub/gitver",
         "disable-shallow-clone": false
     },
