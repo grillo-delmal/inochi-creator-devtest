@@ -388,6 +388,8 @@ jobs:
         mv .dub/packages/local-packages.linux.json .dub/packages/local-packages.json
 
         dub add-path .flatpak-dub
+        dub add-local .flatpak-dub/semver/*/semver;
+        dub add-local .flatpak-dub/gitver/*/gitver;
 
         sudo apt install libsdl2-dev libfreetype6-dev
     
@@ -492,6 +494,8 @@ jobs:
         mv .dub/packages/local-packages.win.json .dub/packages/local-packages.json
 
         dub add-path .flatpak-dub
+        dub add-local (Get-Item .flatpak-dub\semver\*\semver\dub.sdl).DirectoryName
+        dub add-local (Get-Item .flatpak-dub\gitver\*\gitver\dub.sdl).DirectoryName
 
     - name: 'Build Inochi Creator'
       run: |
@@ -583,3 +587,146 @@ jobs:
         name: 'Test Build'
         tag_name: testing
         files: 'out/inochi-creator-win32-x86_64.zip'
+
+  build-macos-dmg:
+    runs-on: macos-14
+    needs: build-base
+
+    steps:
+
+    - uses: dlang-community/setup-dlang@v1.4.0
+      with:
+        compiler: ldc-latest
+  
+    - name: Download source
+      continue-on-error: true
+      uses: actions/download-artifact@v4
+      with:
+        name: inochi-creator-source
+        path: '.'
+      
+    - name: "Prepare for DMG packing"
+      continue-on-error: true
+      run: |
+        export HOMEBREW_NO_INSTALL_CLEANUP=1
+        export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+        brew update
+        brew install create-dmg gettext
+
+    - name: "Remove conflicting brew packages"
+      continue-on-error: true
+      run: |
+        # Remove conflicting brew items
+        brew remove --ignore-dependencies libpng brotli harfbuzz
+
+    - name: "Remove final conflicting files"
+      continue-on-error: true
+      run: |
+        # Delete fake harfbuzz if need be
+        if [ -f "/usr/local/lib/libharfbuzz.dylib" ]; then
+          sudo rm -r /usr/local/lib/libharfbuzz.dylib
+        fi
+
+        # And the .a for it as well
+        if [ -f "/usr/local/lib/libharfbuzz.a" ]; then
+          sudo rm -r /usr/local/lib/libharfbuzz.a
+        fi
+
+    - name: 'Generate i18n'
+      run: |
+        sudo chmod +x ./gentl.sh
+        ./gentl.sh
+      
+    - name: 'Get dependencies'
+      run: |
+        rm .dub/packages/local-packages.json
+        mv .dub/packages/local-packages.mac.json .dub/packages/local-packages.json
+
+        dub add-path .flatpak-dub
+        dub add-local .flatpak-dub/semver/*/semver;
+        dub add-local .flatpak-dub/gitver/*/gitver;
+
+    - name: 'Build inochi-creator'
+      env:
+        DFLAGS: "-g -force-dwarf-frame-section=false"
+      run: |
+
+        # Build metadata (like version information and icons)
+        dub build --config=meta
+
+        # First build ARM64 version...
+        echo "Building arm64 binary..."
+        dub build --config=osx-nightly --arch=arm64-apple-macos
+        mv "out/Inochi Creator.app/Contents/MacOS/inochi-creator" "out/Inochi Creator.app/Contents/MacOS/inochi-creator-arm64"
+
+        # Then the X86_64 version...
+        echo "Building x86_64 binary..."
+        dub build --config=osx-nightly --arch=x86_64-apple-macos
+        mv "out/Inochi Creator.app/Contents/MacOS/inochi-creator" "out/Inochi Creator.app/Contents/MacOS/inochi-creator-x86_64"
+
+        # Glue them together with lipo
+        echo "Gluing them together..."
+        lipo "out/Inochi Creator.app/Contents/MacOS/inochi-creator-x86_64" "out/Inochi Creator.app/Contents/MacOS/inochi-creator-arm64" -output "out/Inochi Creator.app/Contents/MacOS/inochi-creator" -create
+
+        # Print some nice info
+        echo "Done!"
+        lipo -info "out/Inochi Creator.app/Contents/MacOS/inochi-creator"
+
+        # Cleanup and bundle
+        echo "Cleaning up..."
+        rm "out/Inochi Creator.app/Contents/MacOS/inochi-creator-x86_64" "out/Inochi Creator.app/Contents/MacOS/inochi-creator-arm64"
+        sh ./build-aux/osx/osxbundle.sh
+
+    - name: 'Build DMG'
+      run: |
+        sh ./build-aux/osx/gendmg.sh
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: inochi-creator-macos
+        path: 'out/'
+
+  publish-macos-dmg-nightly:
+    runs-on: ubuntu-latest
+    needs: build-macos-dmg
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Download macos files
+      uses: actions/download-artifact@v4
+      with:
+        name: inochi-creator-macos
+        path: 'out/'
+
+    - name: Release to nightly tag
+      uses: softprops/action-gh-release@v2
+      with:
+        name: 'Unofficial Nightly Build'
+        tag_name: nightly
+        files: 'out/Install_Inochi_Creator.dmg'
+
+  publish-macos-dmg-test:
+    runs-on: ubuntu-latest
+    needs: build-macos-dmg
+    if: github.ref != 'refs/heads/main'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Download macos files
+      uses: actions/download-artifact@v4
+      with:
+        name: inochi-creator-macos
+        path: 'out/'
+
+    - name: Release to other tag
+      uses: softprops/action-gh-release@v2
+      with:
+        name: 'Test Build'
+        tag_name: testing
+        files: 'out/Install_Inochi_Creator.dmg'

@@ -29,7 +29,7 @@ jobs:
 
       - name: Install deps
         run: |
-          dnf -y install dub ldc python3-pyyaml
+          dnf -y install dub ldc python3-pyyaml jq
 
       - name: Update dependencies
         run: |

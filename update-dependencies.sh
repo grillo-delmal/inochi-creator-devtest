@@ -109,6 +109,7 @@ git -C ./inmath checkout v1.0.6
 # Download gitver and semver
 git clone https://github.com/Inochi2D/gitver.git
 git clone https://github.com/dcarp/semver.git
+git -C ./semver checkout v0.3.4
 popd #deps
 
 if [ "${NIGHTLY}" == "0" ]; then
@@ -167,13 +168,12 @@ popd #dep.build
 
 echo "### Process Stage"
 
-# Get / Install flatpak-dub-generator
-curl \
-    -o ./dep.build/flatpak-dub-generator.py \
-    https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/master/dub/flatpak-dub-generator.py 
+mv ./dep.build/inochi-creator/dub.selections.json ./dep.build/inochi-creator/dub.selections.json.bak
+jq ".versions += {\"semver\": \"$(semver ./dep.build/deps/semver)\", \"gitver\": \"$(semver ./dep.build/deps/gitver)\"}" \
+    ./dep.build/inochi-creator/dub.selections.json.bak > ./dep.build/inochi-creator/dub.selections.json
 
 # Generate the dependency file
-python3 ./dep.build/flatpak-dub-generator.py \
+python3 ./scripts/flatpak-dub-generator.py \
     --output=./dep.build/dub-dependencies.json \
     ./dep.build/inochi-creator/dub.selections.json
 

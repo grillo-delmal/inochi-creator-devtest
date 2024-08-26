@@ -20,36 +20,6 @@ forked_sources = os.listdir(deps_path)
 # .entry is in the list of forked_sources
 url_re = re.compile(r"https://code\.dlang\.org/packages/(.*)/")
 
-# Add gitver entry
-gitver_path = os.path.join(deps_path, "gitver")
-
-result.append({
-    "type": "git",
-    "url": subprocess.check_output(
-        ["git", "-C", gitver_path, 
-        "config", "--get", "remote.origin.url"]).decode("utf-8").strip(),
-    "commit" : subprocess.check_output(
-        ["git", "-C", gitver_path, 
-        "rev-parse", "HEAD"]).decode("utf-8").strip(),
-    "dest": ".flatpak-dub/gitver",
-    "disable-shallow-clone": False
-    })
-
-# Add semver entry
-semver_path = os.path.join(deps_path, "semver")
-
-result.append({
-    "type": "git",
-    "url": subprocess.check_output(
-        ["git", "-C", semver_path, 
-        "config", "--get", "remote.origin.url"]).decode("utf-8").strip(),
-    "commit" : subprocess.check_output(
-        ["git", "-C", semver_path, 
-        "rev-parse", "HEAD"]).decode("utf-8").strip(),
-    "dest": ".flatpak-dub/semver",
-    "disable-shallow-clone": False
-    })
-
 # Process all entries
 for source in data:
     if source["type"] == "archive":

@@ -37,9 +37,9 @@ modules:
           ./gentl.sh;
           mv out/* otl/ ;
         fi
-      - jq 'map(.path = (["D:/a/inochi-creator-nightly/inochi-creator-nightly"] + (.path | split("/"))[-2:] | join("/")) )' <<<$(<.dub/packages/local-packages.json) > .dub/packages/local-packages.win.json
-      - jq 'map(.path = (["/Users/runner/work/inochi-creator-nightly/inochi-creator-nightly"] + (.path | split("/"))[-2:] | join("/")) )' <<<$(<.dub/packages/local-packages.json) > .dub/packages/local-packages.mac.json
-      - jq 'map(.path = (["/home/runner/work/inochi-creator-nightly/inochi-creator-nightly"] + (.path | split("/"))[-2:] | join("/")) )' <<<$(<.dub/packages/local-packages.json) > .dub/packages/local-packages.linux.json
+      - jq 'map(.path = (["D:/a/inochi-creator-nightly/inochi-creator-nightly"] + (.path | split("/"))[-4:] | join("/")) )' <<<$(<.dub/packages/local-packages.json) > .dub/packages/local-packages.win.json
+      - jq 'map(.path = (["/Users/runner/work/inochi-creator-nightly/inochi-creator-nightly"] + (.path | split("/"))[-4:] | join("/")) )' <<<$(<.dub/packages/local-packages.json) > .dub/packages/local-packages.mac.json
+      - jq 'map(.path = (["/home/runner/work/inochi-creator-nightly/inochi-creator-nightly"] + (.path | split("/"))[-4:] | join("/")) )' <<<$(<.dub/packages/local-packages.json) > .dub/packages/local-packages.linux.json
       # Clean up
       - rm -rf $(find .flatpak-dub/ -maxdepth 1 -iname "i2d-imgui*")/.git/modules
       - rm -rf $(find .flatpak-dub/ -maxdepth 1 -iname "i2d-imgui*")/deps/SDL/test
@@ -79,6 +79,8 @@ modules:
       - rm -rf $(find .flatpak-dub/ -maxdepth 1 -iname "i2d-imgui*")/deps/SDL/test
       # Build
       - dub add-path .flatpak-dub;
+        dub add-local .flatpak-dub/semver/*/semver;
+        dub add-local .flatpak-dub/gitver/*/gitver;
         dub build --skip-registry=all --config=meta;
         dub build --skip-registry=all --build=release --config=barebones --debug=InExperimental
       - install -Dm 755 ./out/inochi-creator /app/bin/inochi-creator
