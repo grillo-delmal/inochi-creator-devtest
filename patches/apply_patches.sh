@@ -11,10 +11,10 @@ if [ -d "./patches" ]; then
             for d in * ; do
                 if [ -d "$d" ]; then
                     for p in ${d}/*.patch; do 
-                        for g in ../../$1/${d}*; do
+                        for g in ../../$1/${d}/*/${d}/; do
                             if [ -d "$g" ]; then
-                                echo "Patching ${p}"
-                                cat ../../patches/libs/$p | git -C ${g} apply
+                                echo "Patching ${p} in ${g}"
+                                cat $p | git -C ${g} apply
                             fi
                         done
                     done
