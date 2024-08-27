@@ -38,6 +38,7 @@ jobs:
       - name: Commit changes
         id: is-updated 
         run: |
+          git add .
           git status -s -uno
           [ -z "$(git status -s -uno)" ] || echo "updated=true" >> $GITHUB_OUTPUT
 

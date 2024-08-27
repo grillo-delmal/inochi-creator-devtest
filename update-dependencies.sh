@@ -139,7 +139,7 @@ git -C ./deps/semver/ checkout "$REQ_SEMVER_TAG" 2>/dev/null
 
 # Make sure to apply patches beforehand
 popd
-bash ./patches/apply_patches.sh dep.build/deps dep.build/inochi-creator
+bash ./scripts/apply_local_patches.sh dep.build/deps dep.build/inochi-creator
 pushd dep.build
 
 echo "### Build Stage"
