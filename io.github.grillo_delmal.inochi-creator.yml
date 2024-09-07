@@ -24,6 +24,8 @@ modules:
 
   - name: Inochi-Creator-Source
     buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/ldc/bin
     build-commands:
       # Apply lib patches
       - bash ./patches/apply_patches.sh .flatpak-dub .
@@ -43,6 +45,11 @@ modules:
       # Clean up
       - rm -rf $(find .flatpak-dub/ -maxdepth 1 -iname "i2d-imgui*")/.git/modules
       - rm -rf $(find .flatpak-dub/ -maxdepth 1 -iname "i2d-imgui*")/deps/SDL/test
+
+      - dub add-path .flatpak-dub;
+        dub add-local .flatpak-dub/semver/*/semver;
+        dub add-local .flatpak-dub/gitver/*/gitver;
+        dub describe --skip-registry=all --build=release --config=barebones --debug=InExperimental
 
     sources:
       - dub-add-local-sources.json
