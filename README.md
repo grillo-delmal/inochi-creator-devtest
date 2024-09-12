@@ -1,4 +1,4 @@
-# Inochi Creator Nightly Builds
+# Inochi Creator DevTest Builds
 
 This is not an official build of inochi-creator. I use this system to check on the latest updates and to test new patches.
 Don't expect any warranty or support if you use the generated builds from this repository.
@@ -6,7 +6,7 @@ For normal supported usage, please get a supported official version from the [in
 
 ## Installation
 
-You can get the latest builds from the [release section](https://github.com/grillo-delmal/inochi-creator-nightly/releases/tag/nightly).
+You can get the latest builds from the [release section](https://github.com/grillo-delmal/inochi-creator-devtest/releases/tag/nightly).
 
 Linux builds of this repository are also provided through the [Inochi2d Flatpak DevTest](https://github.com/grillo-delmal/inochi2d-flatpak-devtest) repo.
 
@@ -39,4 +39,4 @@ gdb --ex 'r' /app/bin/inochi-creator
 ```
 ### Debugging in Windows
 
-Download [WinDbg](http://www.windbg.org/) and the source code from the [release section](https://github.com/grillo-delmal/inochi-creator-nightly/releases/tag/nightly)... you can figure out the rest from there.
+Download [WinDbg](http://www.windbg.org/) and the source code from the [release section](https://github.com/grillo-delmal/inochi-creator-devtest/releases/tag/nightly)... you can figure out the rest from there.

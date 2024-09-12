@@ -25,18 +25,18 @@ enum INC_BANNER_ARTIST_PAGE = "";
 /**
     URI for bug reports, for unofficial builds this SHOULD be changed.
 */
-enum INC_BUG_REPORT_URI = "https://github.com/grillo-delmal/inochi-creator-nightly/issues/new";
+enum INC_BUG_REPORT_URI = "https://github.com/grillo-delmal/inochi-creator-devtest/issues/new";
 
 /**
     URI for feature requests, for the most part this doesn't need to be changed
     unless you're making a fork.
 */
-enum INC_FEATURE_REQ_URI = "https://github.com/grillo-delmal/inochi-creator-nightly/issues/new";
+enum INC_FEATURE_REQ_URI = "https://github.com/grillo-delmal/inochi-creator-devtest/issues/new";
 
 /**
     URI to website for the project, change this if you fork the project.
 */
-enum INC_INFO_WEBSITE_URI = "https://github.com/grillo-delmal/inochi-creator-nightly/";
+enum INC_INFO_WEBSITE_URI = "https://github.com/grillo-delmal/inochi-creator-devtest/";
 
 /**
     URI to documentation provided for this software, by default it'll direct to the Inochi2D Documentation

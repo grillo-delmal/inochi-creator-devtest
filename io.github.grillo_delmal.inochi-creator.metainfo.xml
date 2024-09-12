@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop">
   <id>io.github.grillo_delmal.inochi-creator</id>
-  <name>Inochi Creator (Dev Test)</name>
+  <name>Inochi Creator (DevTest)</name>
   <summary>Tool to create and edit Inochi2D puppets</summary>
   <developer id="com.inochi2d">
     <name>Luna the Foxgirl</name>
@@ -30,8 +30,8 @@
       </description>
     </release>
   </releases>
-  <url type="homepage">https://github.com/grillo-delmal/inochi-creator-nightly</url>
-  <url type="help">https://docs.inochi2d.com</url>
+  <url type="homepage">https://github.com/grillo-delmal/inochi-creator-devtest</url>
+  <url type="bugtracker">https://github.com/grillo-delmal/inochi-creator-devtest/issues</url>
   <categories>
     <category>Graphics</category>
   </categories>
