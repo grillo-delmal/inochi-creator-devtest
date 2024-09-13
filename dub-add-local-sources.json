@@ -105,7 +105,7 @@
     {
         "type": "git",
         "url": "https://github.com/Inochi2D/inmath.git",
-        "commit": "6ee33a0e160bcf0c0286a16e232feeeae2306548",
+        "commit": "2c01e45dff04775c7089854934f630707f530973",
         "dest": ".flatpak-dub/inmath/1.3.0/inmath",
         "disable-shallow-clone": false
     },
@@ -148,10 +148,11 @@
         "dest": ".flatpak-dub/mir-random/2.2.19/mir-random"
     },
     {
-        "type": "archive",
-        "url": "https://code.dlang.org/packages/numem/0.11.1.zip",
-        "sha256": "ab480c0cbf4239c1c69218e4f12eb0e613958869b76d6bb7d1a1f2d3403f639b",
-        "dest": ".flatpak-dub/numem/0.11.1/numem"
+        "type": "git",
+        "url": "https://github.com/Inochi2D/numem.git",
+        "commit": "8f3a5256525f2d997826a5e73d68663cd9b4961a",
+        "dest": ".flatpak-dub/numem/0.11.1/numem",
+        "disable-shallow-clone": false
     },
     {
         "type": "archive",
