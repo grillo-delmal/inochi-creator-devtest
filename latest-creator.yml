@@ -1,4 +1,4 @@
 type: git
 url: https://github.com/Inochi2D/inochi-creator.git
-commit: 9e7b5dfe6c36cac67ebcde35323f5471690715b4
+commit: 9b3ed6bbd7cafd05f7ae420c925b1e89dd2d8058
 disable-shallow-clone: true
