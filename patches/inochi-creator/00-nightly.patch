@@ -45,7 +45,7 @@ index f93b6b7..bc9415e 100644
              new Nagscreen(
                  _("Warning!"), 
 -                _("You're running a nightly build of Inochi Creator!\nInochi Creator may crash unexpectedly and you will likely encounter bugs.\nMake sure to save and back up your work often!"),
-+                _("You're running a devtest build of Inochi Creator maintained by Grillo del Mal!\nIt might have some weird patches too, so use at your own risk.\nInochi Creator may crash unexpectedly and you will likely encounter bugs.\nMake sure to save and back up your work often!\n\nIf you like what your see, [buy a copy from the official release today!](https://inochi2d.com)"),
++                _("You're running an unofficial devtest build of Inochi Creator maintained by Grillo del Mal! This version is unsupported by the Inochi2D project and might have some changes too, so use at your own risk.\n\nThis version of the app may crash unexpectedly and you will likely encounter bugs, so make sure to save and back up your work often!\n\nIf you require support, consider [buying a copy from the official release!](https://inochi2d.com)"),
                  5
              )
          );
