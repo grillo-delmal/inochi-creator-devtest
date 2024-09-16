@@ -437,6 +437,7 @@ jobs:
         export DFLAGS='-g --d-debug'
 
         # Build metadata (like version information and icons)
+        dub build --skip-registry=all --config=update-version
         dub build --skip-registry=all --config=meta
 
         # Build the project, with its main file included, without unittests
@@ -552,6 +553,7 @@ jobs:
           Invoke-VSDevEnvironment
 
           # Build metadata (like version information and icons)
+          dub build --skip-registry=all --config=update-version
           dub build --skip-registry=all --config=meta
 
           # Build the project, with its main file included, without unittests
@@ -693,6 +695,7 @@ jobs:
       run: |
 
         # Build metadata (like version information and icons)
+        dub build --skip-registry=all --config=update-version
         dub build --skip-registry=all --config=meta
 
         # First build ARM64 version...
