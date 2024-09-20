@@ -7,7 +7,10 @@ source ./scripts/semver.sh
 CHECKOUT_TARGET=
 NIGHTLY=0
 VERIFY_CREATOR=1
+PATCH_CREATOR=1
 EXT_CREATOR=
+YML_CREATOR=
+OUTPATH=.
 
 # Parse options
 for i in "$@"; do
@@ -22,16 +25,23 @@ By default it uses the version defined by the commit hash defined in the
 
     --target=<string>       Checkout a specific hash/tag/branch instead of
                             reading the one defined on the yaml file.
+    --yml-creator=<string>  Search creator commit in external file
     --ext-creator=<string>  Search creator commit in external file
     --nightly               Will checkout the latest commit from all 
                             dependency repositories.
+    --skip-patch            Skip patches.
     --force                 Skip verification.
+    --outpath               Path where to write dep results.
     --help                  Display this help and exit
 EOL
             exit 0
             ;;
         -t=*|--target=*)
             CHECKOUT_TARGET="${i#*=}"
+            shift # past argument=value
+            ;;
+        -y=*|--yml-creator=*)
+            YML_CREATOR="${i#*=}"
             shift # past argument=value
             ;;
         -e=*|--ext-creator=*)
@@ -44,6 +54,9 @@ EOL
         -f|--force)
             VERIFY_CREATOR=0
             ;;
+        -s|--skip-patch)
+            PATCH_CREATOR=0
+            ;;
         -*|--*)
             echo "Unknown option $i"
             exit 1
@@ -53,10 +66,17 @@ EOL
     esac
 done
 
+# If no outpath and yml, use yml path as output
+if [ "${OUTPATH}" == "." ] && ! [ -z ${YML_CREATOR} ]; then
+    OUTPATH=$(dirname ${YML_CREATOR})
+fi
+
 echo "### Verification Stage"
 if [ -z ${CHECKOUT_TARGET} ]; then
-    if [ -z ${EXT_CREATOR} ]; then
+    if [ -z ${EXT_CREATOR} ] && [ -z ${YML_CREATOR} ]; then
         CHECKOUT_TARGET=$(python3 ./scripts/find-creator-hash.py ./io.github.grillo_delmal.inochi-creator.yml)
+    elif [ -z ${EXT_CREATOR} ]; then
+        CHECKOUT_TARGET=$(python3 ./scripts/find-creator-hash.py ${YML_CREATOR})
     else
         CHECKOUT_TARGET=$(python3 ./scripts/find-creator-hash.py ${EXT_CREATOR} ext)
     fi
@@ -64,8 +84,8 @@ fi
 
 # Verify that we are not repeating work 
 if [ "${NIGHTLY}" == "0" ] && [ "${VERIFY_CREATOR}" == "1" ]; then
-    if [ -f "./.dep_target" ]; then
-        LAST_PROC=$(cat ./.dep_target)
+    if [ -f "${OUTPATH}/.dep_target" ]; then
+        LAST_PROC=$(cat ${OUTPATH}/.dep_target)
         if [ "$CHECKOUT_TARGET" == "$LAST_PROC" ]; then
             echo "Dependencies already processed for current commit."
             exit 1
@@ -137,10 +157,12 @@ fi
 REQ_SEMVER_TAG=v$(grep -oP 'semver.*~>\K(.*)(?=")' ./deps/gitver/dub.sdl)
 git -C ./deps/semver/ checkout "$REQ_SEMVER_TAG" 2>/dev/null
 
-# Make sure to apply patches beforehand
-popd
-bash ./scripts/apply_local_patches.sh dep.build/deps dep.build/inochi-creator
-pushd dep.build
+if [ "${PATCH_CREATOR}" == "1" ]; then
+    # Make sure to apply patches beforehand
+    popd
+    bash ./scripts/apply_local_patches.sh dep.build/deps dep.build/inochi-creator
+    pushd dep.build
+fi
 
 echo "### Build Stage"
 
@@ -180,13 +202,14 @@ python3 ./scripts/flatpak-dub-generator.py \
 # Generate the dub-add-local-sources.json using the generated
 # dependency file and adding the correct information to get
 # the project libraries.
+
 python3 ./scripts/write-dub-deps.py \
     ./dep.build/dub-dependencies.json \
-    ./dub-add-local-sources.json \
+    ${OUTPATH}/dub-add-local-sources.json \
     ./dep.build/deps
  
 if [ "${NIGHTLY}" == "1" ]; then
-    rm -f ./.dep_target
+    rm -f ${OUTPATH}/.dep_target
 else
-    echo "$CHECKOUT_TARGET" > ./.dep_target
+    echo "$CHECKOUT_TARGET" > ${OUTPATH}/.dep_target
 fi
