@@ -1,16 +1,16 @@
 diff --git a/dub.sdl b/dub.sdl
-index 80836a9..a0c3b62 100644
+index 1382cb4..4f87314 100644
 --- a/dub.sdl
 +++ b/dub.sdl
-@@ -28,6 +28,7 @@ configuration "barebones" {
+@@ -29,6 +29,7 @@ configuration "barebones" {
  	targetType "executable"
  	subConfiguration "i2d-imgui" "static_dynamicCRT"
  	copyFiles "res/NotoSansCJK-Regular-LICENSE" "res/MaterialIcons-LICENSE" "res/OpenDyslexic-LICENSE" "LICENSE"
 +	versions "InNightly"
  }
  
- // Metadata generation
-@@ -105,7 +106,7 @@ configuration "linux-nightly" {
+ // Linux build
+@@ -99,7 +100,7 @@ configuration "linux-nightly" {
  	dependency "dportals" version="~>0.1.0"
  	targetType "executable"
  	subConfiguration "i2d-imgui" "static_dynamicCRT"
@@ -19,7 +19,7 @@ index 80836a9..a0c3b62 100644
  }
  
  // macOS nightly build
-@@ -116,7 +117,7 @@ configuration "osx-nightly" {
+@@ -110,7 +111,7 @@ configuration "osx-nightly" {
  	subConfiguration "i2d-imgui" "dynamic_dynamicCRT"
  	dflags "-force-dwarf-frame-section=false"
  	lflags "-rpath" "@executable_path/../Frameworks" "-rpath" "@executable_path/."
@@ -28,24 +28,27 @@ index 80836a9..a0c3b62 100644
  }
  
  // Windows nightly build
-@@ -126,5 +127,5 @@ configuration "win32-nightly" {
+@@ -120,7 +121,7 @@ configuration "win32-nightly" {
  	subConfiguration "i2d-imgui" "static_staticCRT"
  	lflags "/SUBSYSTEM:windows" "/ENTRY:mainCRTStartup" platform="windows-dmd"
  	sourceFiles "build-aux\\windows\\inochi-creator.res"
 -	versions "InBranding" "InNightly"
 +	versions "InNightly"
  }
-\ No newline at end of file
+ 
+ // Version info generation
 diff --git a/source/app.d b/source/app.d
-index f93b6b7..bc9415e 100644
+index f93b6b7..7260a04 100644
 --- a/source/app.d
 +++ b/source/app.d
-@@ -93,7 +93,7 @@ int main(string[] args)
+@@ -93,8 +93,8 @@ int main(string[] args)
          version(InNightly) incModalAdd(
              new Nagscreen(
                  _("Warning!"), 
 -                _("You're running a nightly build of Inochi Creator!\nInochi Creator may crash unexpectedly and you will likely encounter bugs.\nMake sure to save and back up your work often!"),
-+                _("You're running an unofficial devtest build of Inochi Creator maintained by Grillo del Mal! This version is unsupported by the Inochi2D project and might have some changes too, so use at your own risk.\n\nThis version of the app may crash unexpectedly and you will likely encounter bugs, so make sure to save and back up your work often!\n\nIf you require support, consider [buying a copy from the official release!](https://inochi2d.com)"),
-                 5
+-                5
++                _("You're running an unofficial devtest build of Inochi Creator maintained by Grillo del Mal! This version is unsupported by the Inochi2D project and might have some changes too, so use at your own risk.\n\nThis version of the app is generated nightly, so it may crash unexpectedly and you will likely encounter bugs, so make sure to save and back up your work often!\n\nIf you like what you see, consider [buying a copy from the official release!](https://inochi2d.com)"),
++                1
              )
          );
+         
