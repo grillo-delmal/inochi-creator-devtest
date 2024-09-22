@@ -430,7 +430,7 @@ jobs:
         dub add-local .flatpak-dub/semver/*/semver;
         dub add-local .flatpak-dub/gitver/*/gitver;
 
-        sudo apt install libsdl2-dev libfreetype6-dev
+        sudo apt-get update && sudo apt-get -y --no-install-recommends install libsdl2-dev libfreetype6-dev
     
     - name: 'Build Inochi Creator'
       run: |
