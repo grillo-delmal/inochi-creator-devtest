@@ -150,7 +150,7 @@
     {
         "type": "git",
         "url": "https://github.com/Inochi2D/numem.git",
-        "commit": "4598a0623efdd9499e8c1ce9b2ff044d0399921f",
+        "commit": "0e03ca871750c0e0240f1adc5e74c09ac361e778",
         "dest": ".flatpak-dub/numem/0.20.1/numem",
         "disable-shallow-clone": false
     },
