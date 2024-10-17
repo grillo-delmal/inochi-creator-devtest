@@ -50,7 +50,7 @@ modules:
       - dub add-path .flatpak-dub;
         dub add-local .flatpak-dub/semver/*/semver;
         dub add-local .flatpak-dub/gitver/*/gitver;
-        dub describe --skip-registry=all --build=debug --config=barebones > describe
+        dub describe --skip-registry=all --config=barebones > describe
 
     sources:
       - dub-add-local-sources.json

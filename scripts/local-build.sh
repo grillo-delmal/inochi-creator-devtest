@@ -15,5 +15,5 @@ flatpak build-bundle \
     inochi-creator.x86_64.debug.flatpak \
     io.github.grillo_delmal.inochi_creator.Debug localbuild
 
-# flatpak --user -y install inochi-creator.x86_64.flatpak
-# flatpak --user -y install inochi-creator.x86_64.debug.flatpak
+# flatpak -y install inochi-creator.x86_64.flatpak
+# flatpak -y install inochi-creator.x86_64.debug.flatpak
