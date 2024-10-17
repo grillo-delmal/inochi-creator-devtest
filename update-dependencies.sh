@@ -184,7 +184,8 @@ done
 # Download dependencies and generate the dub.selections.json file in the process
 pushd inochi-creator
 dub describe  \
-    --compiler=ldc2 --build=release --config=linux-full \
+    --compiler=ldc2 \
+    --config=barebones \
     --cache=local \
     >> ../describe.json
 popd #inochi-creator
