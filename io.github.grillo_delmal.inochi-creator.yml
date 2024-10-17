@@ -1,31 +1,32 @@
 id: io.github.grillo_delmal.inochi-creator
 runtime: org.freedesktop.Platform
-runtime-version: '23.08'
+runtime-version: '24.08'
 sdk: org.freedesktop.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.ldc
-  - org.freedesktop.Sdk.Extension.llvm16
+  - org.freedesktop.Sdk.Extension.llvm18
 add-extensions:
   - org.freedesktop.Platform.ffmpeg-full:
-    version: '23.08'
+    version: '24.08'
     directory: lib/ffmpeg
     add-ld-path: .
 command: inochi-creator
 finish-args:
-  - --device=all          # OpenGL rendering, webcams (may be required? not sure)
+  - --device=all          # OpenGL rendering
   - --socket=fallback-x11
   - --share=ipc
   - --socket=wayland
-  - --filesystem=host     # This is a dev tool, it should probably have as much access to the host as it can. Also needs it for "Recent Files"
+  - --filesystem=host     # Needed for file drop and "Recent Files" handling
 cleanup-commands:
   - mkdir -p ${FLATPAK_DEST}/lib/ffmpeg
 
 modules:
-
-  - name: Inochi-Creator-Source
+  - name: sources
     buildsystem: simple
     build-options:
       append-path: /usr/lib/sdk/ldc/bin
+      prepend-path: /usr/lib/sdk/llvm18/bin
+      prepend-ld-library-path: /usr/lib/sdk/llvm18/lib
     build-commands:
       # Apply lib patches
       - bash ./patches/apply_patches.sh .flatpak-dub .
@@ -60,12 +61,12 @@ modules:
         path: patches/
         dest: patches/
 
-
-  # --- Inochi Creator ---
-  - name: Inochi-Creator
+  - name: inochi-creator
     buildsystem: simple
     build-options:
       append-path: /usr/lib/sdk/ldc/bin
+      prepend-path: /usr/lib/sdk/llvm18/bin
+      prepend-ld-library-path: /usr/lib/sdk/llvm18/lib
       env:
         DFLAGS: '-g --d-debug'
     build-commands:
@@ -90,10 +91,10 @@ modules:
         dub add-local .flatpak-dub/gitver/*/gitver;
         dub build --skip-registry=all --config=update-version;
         dub build --skip-registry=all --config=meta;
-        dub build --skip-registry=all --build=debug --config=barebones
+        dub build --skip-registry=all --config=barebones
       - install -Dm 755 ./out/inochi-creator /app/bin/inochi-creator
       - install -Dm644 ./otl/*.mo /app/bin
-
+      - install -Dm644 inochi-creator.desktop /app/share/applications/io.github.grillo_delmal.inochi-creator.desktop
     sources:
       - dub-add-local-sources.json
       - latest-creator.yml
@@ -102,23 +103,19 @@ modules:
       - type: dir
         path: patches/
         dest: patches/
+      - type: file
+        path: inochi-creator.desktop
 
-  - name: Metadata
+  - name: metadata
     buildsystem: simple
     build-commands:
-
-      - install -Dm644 io.github.grillo_delmal.inochi-creator.metainfo.xml /app/share/metainfo/io.github.grillo_delmal.inochi-creator.metainfo.xml
-      - install -Dm644 ./vpuppet-rigging.png /app/share/icons/hicolor/128x128/apps/io.github.grillo_delmal.inochi-creator.png
-      - install -Dm644 inochi-creator.desktop /app/share/applications/io.github.grillo_delmal.inochi-creator.desktop
-
+      - install -Dm644 ./metainfo/io.github.grillo_delmal.inochi-creator.metainfo.xml /app/share/metainfo/io.github.grillo_delmal.inochi-creator.metainfo.xml
+      - install -Dm644 ./branding/vpuppet-rigging.png /app/share/icons/hicolor/128x128/apps/io.github.grillo_delmal.inochi-creator.png
     sources:
       - type: git
         url: https://github.com/grillo-delmal/vpuppet-icons.git
         commit: 5a0504eed1fb1b1a80415b17d9c860e01bebb191
-
-      - type: file
-        path: inochi-creator.desktop
-
+        dest: ./branding
       - type: file
         path: io.github.grillo_delmal.inochi-creator.metainfo.xml
-
+        dest: ./metainfo

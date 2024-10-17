@@ -27,11 +27,11 @@ By default it uses the version defined by the commit hash defined in the
                             reading the one defined on the yaml file.
     --yml-creator=<string>  Search creator commit in external file
     --ext-creator=<string>  Search creator commit in external file
+    --outpath               Path where to write dep results.
     --nightly               Will checkout the latest commit from all 
                             dependency repositories.
     --skip-patch            Skip patches.
     --force                 Skip verification.
-    --outpath               Path where to write dep results.
     --help                  Display this help and exit
 EOL
             exit 0
@@ -46,6 +46,10 @@ EOL
             ;;
         -e=*|--ext-creator=*)
             EXT_CREATOR="${i#*=}"
+            shift # past argument=value
+            ;;
+        -o=*|--outpath=*)
+            OUTPATH="${i#*=}"
             shift # past argument=value
             ;;
         -n|--nightly)
@@ -110,17 +114,17 @@ git -C ./inochi-creator/ checkout $CHECKOUT_TARGET 2>/dev/null
 mkdir -p ./deps
 pushd deps
 git clone https://github.com/Inochi2D/inochi2d.git
+git clone https://github.com/Inochi2D/dportals.git
 git clone https://github.com/Inochi2D/facetrack-d.git
-git clone https://github.com/Inochi2D/vmc-d.git
-git clone https://github.com/Inochi2D/inmath.git
-git clone https://github.com/Inochi2D/psd-d.git
 git clone https://github.com/Inochi2D/fghj.git
+git clone https://github.com/KitsunebiGames/i18n.git i18n-d
 git clone https://github.com/Inochi2D/i2d-imgui.git
 git clone https://github.com/Inochi2D/i2d-opengl.git
-git clone https://github.com/KitsunebiGames/i18n.git i18n-d
-git clone https://github.com/Inochi2D/dportals.git
+git clone https://github.com/Inochi2D/inmath.git
 git clone https://github.com/Inochi2D/kra-d.git
 git clone https://github.com/Inochi2D/numem.git
+git clone https://github.com/Inochi2D/psd-d.git
+git clone https://github.com/Inochi2D/vmc-d.git
 
 # Fixme Use v0_8 branch until v9 is usable
 git -C ./inochi2d checkout v0_8
@@ -201,7 +205,6 @@ python3 ./scripts/flatpak-dub-generator.py \
 # Generate the dub-add-local-sources.json using the generated
 # dependency file and adding the correct information to get
 # the project libraries.
-
 python3 ./scripts/write-dub-deps.py \
     ./dep.build/dub-dependencies.json \
     ${OUTPATH}/dub-add-local-sources.json \
