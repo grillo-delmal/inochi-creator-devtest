@@ -1,0 +1,116 @@
+name: 'Publish OCI image to Github Repo'
+
+on:
+  workflow_call:
+    inputs:
+      target_ref:
+        required: true
+        type: string
+
+env:
+  APP_ID: io.github.grillo_delmal.inochi-creator
+  FLATPAK_BRANCH: devtest
+  DESTINATION_REPOSITORY_NAME: inochi2d-flatpak-devtest
+  FLATPAK_BUILD_REPO: build-repo
+
+jobs:
+  publish-flatpak-oci:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: '${{ inputs.target_ref }}'
+
+    - name: Install flatpak and libcontainers tools
+      run: |
+        set -e
+        . /etc/os-release
+        sudo apt-get update && sudo apt-get -y --no-install-recommends install skopeo flatpak jq
+
+    - name: Download flatpak repo
+      uses: actions/download-artifact@v4
+      with:
+        name: flatpak-build-repo
+        path: ${{ env.FLATPAK_BUILD_REPO }}
+
+    - name: Create OCI bundle
+      run: |
+        set -e
+        mkdir -p ${FLATPAK_BUILD_REPO}/{extensions,refs/{mirrors,remotes},state,tmp/cache}
+        flatpak build-bundle \
+          --oci \
+          --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo \
+          ${FLATPAK_BUILD_REPO} inochi-creator ${APP_ID} ${FLATPAK_BRANCH}
+        flatpak build-bundle \
+          --oci \
+          --runtime \
+          ${FLATPAK_BUILD_REPO} inochi-creator.debug ${APP_ID/-/_}.Debug ${FLATPAK_BRANCH}
+
+    - name: Publish OCI image
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT }}
+        REGISTRY_AUTH_FILE: /tmp/auth.json
+      run: |
+        export IMAGE_REPOSITORY=$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')
+        set -e
+        skopeo login --username "${{ github.actor }}" --password-stdin ghcr.io <<<$GITHUB_TOKEN
+        skopeo copy \
+          oci:inochi-creator \
+          docker://ghcr.io/${IMAGE_REPOSITORY}:$FLATPAK_BRANCH
+        skopeo copy \
+          oci:inochi-creator.debug \
+          docker://ghcr.io/${IMAGE_REPOSITORY}-debug:$FLATPAK_BRANCH
+
+  update-flatpak-oci-index:
+    runs-on: ubuntu-latest
+    needs: publish-flatpak-oci
+
+    steps:
+    - run: echo "REPO_NAME=${{ github.event.repository.name }}" >> $GITHUB_ENV
+
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ github.actor }}/${{ env.DESTINATION_REPOSITORY_NAME }}
+        path: 'gh-pages'
+        token: ${{ secrets.PAT }}
+
+    - name: Update static index
+      env:
+        REGISTRY_AUTH_FILE: /tmp/auth.json
+      run: |
+        export IMAGE_REPOSITORY=$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')
+        set -x
+        mkdir -p ./gh-pages/repos
+        skopeo inspect docker://ghcr.io/${IMAGE_REPOSITORY}:$FLATPAK_BRANCH | \
+          jq --arg github_repository "${GITHUB_REPOSITORY}" '. as $img | { "Name": $github_repository, "Images": [$img] }' > \
+          ./gh-pages/repos/${REPO_NAME}.o
+        [ -s ./gh-pages/repos/${REPO_NAME}.o ] && \
+          mv ./gh-pages/repos/${REPO_NAME}.o ./gh-pages/repos/${REPO_NAME} || \
+          rm ./gh-pages/repos/${REPO_NAME}.o
+        skopeo inspect docker://ghcr.io/${IMAGE_REPOSITORY}-debug:$FLATPAK_BRANCH | \
+          jq --arg github_repository "${GITHUB_REPOSITORY}-debug" '. as $img | { "Name": $github_repository, "Images": [$img] }' > \
+          ./gh-pages/repos/${REPO_NAME}-debug.o
+        [ -s ./gh-pages/repos/${REPO_NAME}-debug.o ] && \
+          mv ./gh-pages/repos/${REPO_NAME}-debug.o ./gh-pages/repos/${REPO_NAME}-debug || \
+          rm ./gh-pages/repos/${REPO_NAME}-debug.o
+        git -C ./gh-pages add .
+
+    - name: Check for changes
+      id: is-updated 
+      run: |
+        set -x
+        git -C ./gh-pages status -s -uno
+        ls ./gh-pages/repos/
+        [ -z "$(git -C ./gh-pages status -s -uno)" ] || echo "updated=true" >> $GITHUB_OUTPUT
+
+    - name: Push to repository
+      if: steps.is-updated.outputs.updated
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git -C gh-pages commit --allow-empty -am "Update index $(date -u +%Y%m%d%H%M)"
+        git -C gh-pages push
+

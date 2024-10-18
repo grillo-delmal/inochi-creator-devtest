@@ -1,0 +1,47 @@
+name: 'Signal to build COPR rpm'
+
+on:
+  workflow_call:
+    inputs:
+      target_ref:
+        required: true
+        type: string
+
+jobs:
+  publish-nightly-rpm:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        path: 'main'
+        ref: '${{ inputs.target_ref }}'
+
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ github.actor }}/inochi-creator-devtest-rpm
+        path: 'inochi-creator-devtest'
+        token: ${{ secrets.PAT }}
+    
+    - name: Download source files
+      uses: actions/download-artifact@v4
+      with:
+        name: inochi-creator-source
+        path: 'src/'
+
+    - name: Update repo
+      run : |
+        pushd inochi-creator-devtest
+        ./update.sh $(source ../main/scripts/gitver.sh; git_version ../src) $(source ../main/scripts/gitver.sh; git_build ../src) $(git -C ../src rev-parse --short=7 HEAD)
+        popd
+        cp -f src/dub.selections.json inochi-creator-devtest/dub.selections.json
+
+    - name: Push rpm repo
+      run: |
+        git config --global user.name 'Sync Process'
+        git config --global user.email 'sync-bot@users.noreply.github.com'
+        git -C inochi-creator-devtest commit --allow-empty -am "RPM Update $(date -u +%Y%m%d%H%M)"
+        git -C inochi-creator-devtest push

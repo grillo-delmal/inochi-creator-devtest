@@ -1,0 +1,74 @@
+name: 'Build Flatpak and collect source'
+
+on:
+  workflow_call:
+    inputs:
+      target_ref:
+        required: true
+        type: string
+
+env:
+  MANIFEST_PATH: io.github.grillo_delmal.inochi-creator.yml
+  FLATPAK_BRANCH: devtest
+  FLATPAK_BUILD_DIR: build-dir
+  FLATPAK_BUILD_REPO: build-repo
+
+jobs:
+  build-flatpak:
+    runs-on: ubuntu-latest
+    container:
+      image: bilelmoussaoui/flatpak-github-actions:freedesktop-24.08
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: '${{ inputs.target_ref }}'
+
+    - name: Dump canonical manifest
+      run: |
+        set -e
+        flatpak-builder --show-manifest ${MANIFEST_PATH} > canonical-manifest.json
+
+    - name: Download flatpak SDK and sources
+      run: |
+        set -e
+        flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+        flatpak-builder --default-branch=${FLATPAK_BRANCH} \
+          --install-deps-from=flathub --install-deps-only --user /dev/null ${MANIFEST_PATH}
+        flatpak-builder --default-branch=${FLATPAK_BRANCH} \
+          --download-only /dev/null ${MANIFEST_PATH}
+
+    - name: Prime cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          .flatpak-builder/ccache
+        key: flatpak-builder-${{ hashFiles('canonical-manifest.json') }}
+        restore-keys: |
+          flatpak-builder-
+
+    - name: Build flatpak
+      run: |
+        set -e
+        flatpak-builder \
+          --default-branch=${FLATPAK_BRANCH} \
+          --disable-updates \
+          --disable-download \
+          --ccache --sandbox --keep-build-dirs \
+          --repo=${FLATPAK_BUILD_REPO} ${FLATPAK_BUILD_DIR} ${MANIFEST_PATH}
+
+    - name: Upload flatpak repo
+      uses: actions/upload-artifact@v4
+      with:
+        name: flatpak-build-repo
+        path: |
+          ${{ env.FLATPAK_BUILD_REPO }}
+          !${{ env.FLATPAK_BUILD_REPO }}/.lock
+
+    - name: Upload source
+      uses: actions/upload-artifact@v4
+      with:
+        name: inochi-creator-source
+        path: .flatpak-builder/build/sources-1/*
+        retention-days: 1
+        include-hidden-files: true

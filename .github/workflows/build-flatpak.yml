@@ -1,0 +1,59 @@
+name: 'Build flatpak bundles'
+
+on:
+  workflow_call:
+    inputs:
+      target_ref:
+        required: true
+        type: string
+
+env:
+  APP_ID: io.github.grillo_delmal.inochi-creator
+  FLATPAK_BRANCH: devtest
+  FLATPAK_BUILD_REPO: build-repo
+
+jobs:
+
+  build-flatpak-bundle:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: '${{ inputs.target_ref }}'
+
+    - name: Install flatpak
+      run: |
+        set -e
+        sudo apt-get update && sudo apt-get -y --no-install-recommends install flatpak
+
+    - name: Download flatpak repo
+      uses: actions/download-artifact@v4
+      with:
+        name: flatpak-build-repo
+        path: ${{ env.FLATPAK_BUILD_REPO }}
+
+    - name: Create flatpak bundle
+      run: |
+        set -e
+        mkdir -p ${FLATPAK_BUILD_REPO}/{extensions,refs/{mirrors,remotes},state,tmp/cache}
+        flatpak build-bundle \
+          --runtime-repo=https://flathub.org/repo/flathub.flatpakrepo \
+          ${FLATPAK_BUILD_REPO} \
+          inochi-creator.flatpak \
+          ${APP_ID} \
+          ${FLATPAK_BRANCH}
+        flatpak build-bundle \
+          --runtime \
+          ${FLATPAK_BUILD_REPO} \
+          inochi-creator.debug.flatpak \
+          ${APP_ID/-/_}.Debug \
+          ${FLATPAK_BRANCH}
+
+    - name: Upload flatpak bundle
+      uses: actions/upload-artifact@v4
+      with:
+        name: inochi-creator-flatpak
+        path: |
+          inochi-creator.flatpak
+          inochi-creator.debug.flatpak

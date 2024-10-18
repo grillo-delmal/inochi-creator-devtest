@@ -1,0 +1,158 @@
+name: 'Publish on Github'
+run-name: 'Publish on Github with ${{ inputs.variant }} tag'
+
+on:
+  workflow_call:
+    inputs:
+      target_ref:
+        required: true
+        type: string
+      variant:
+        required: true
+        type: string
+
+env:
+  APP_ID: io.github.grillo_delmal.inochi-creator
+  MANIFEST_PATH: io.github.grillo_delmal.inochi-creator.yml
+  FLATPAK_BUNDLE: inochi-creator
+  FLATPAK_BRANCH: devtest
+  DESTINATION_REPOSITORY_NAME: inochi2d-flatpak-devtest
+  FLATPAK_BUILD_DIR: build-dir
+  FLATPAK_BUILD_REPO: build-repo
+
+jobs:
+  publish-source:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: '${{ inputs.target_ref }}'
+    
+    - name: Download source files
+      uses: actions/download-artifact@v4
+      with:
+        name: inochi-creator-source
+        path: 'out/'
+
+    - name: Archive Zip
+      uses: thedoctor0/zip-release@main
+      with:
+        type: 'zip'
+        filename: 'inochi-creator-source.zip'
+        directory: 'out/'
+        path: '.'
+
+    - name: 🏷️ Create/update ${{ inputs.variant }} tag
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.git.createRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: 'refs/tags/${{ inputs.variant }}',
+            sha: context.sha
+          }).catch(err => {
+            if (err.status !== 422) throw err;
+            github.rest.git.updateRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'tags/${{ inputs.variant }}',
+              sha: context.sha
+            });
+          })
+
+    - name: Release to ${{ inputs.variant }} tag
+      uses: softprops/action-gh-release@v2
+      with:
+        name: 'Unofficial ${{ inputs.variant }} build'
+        tag_name: ${{ inputs.variant }}
+        files: 'out/inochi-creator-source.zip'
+
+  publish-flatpak-bundle:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: '${{ inputs.target_ref }}'
+    
+    - name: Download flatpak bundle
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ env.FLATPAK_BUNDLE }}
+        path: 'out/'
+
+    - name: Download flatpak debug bundle
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ env.FLATPAK_BUNDLE }}.debug
+        path: 'out/'
+
+    - name: Release to ${{ inputs.variant }} tag
+      uses: softprops/action-gh-release@v2
+      with:
+        name: 'Unofficial DevTest Build'
+        tag_name: ${{ inputs.variant }}
+        files: |
+          out/${{ env.FLATPAK_BUNDLE }}.flatpak
+          out/${{ env.FLATPAK_BUNDLE }}.debug.flatpak
+
+  publish-linux-zip:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Download linux files
+      uses: actions/download-artifact@v4
+      with:
+        name: inochi-creator-linux-x86_64
+        path: 'out/'
+
+    - name: Archive Zip
+      uses: thedoctor0/zip-release@main
+      with:
+        type: 'zip'
+        filename: 'inochi-creator-linux-x86_64.zip'
+        directory: 'out/'
+        path: '*'
+
+    - name: Release to ${{ inputs.variant }} tag
+      uses: softprops/action-gh-release@v2
+      with:
+        name: 'Unofficial DevTest Build'
+        tag_name: ${{ inputs.variant }}
+        files: 'out/inochi-creator-linux-x86_64.zip'
+
+  publish-windows-zip-nightly:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Download windows files
+      uses: actions/download-artifact@v4
+      with:
+        name: inochi-creator-win32-x86_64
+        path: 'out/'
+
+    - name: Archive Zip
+      uses: thedoctor0/zip-release@main
+      with:
+        type: 'zip'
+        filename: 'inochi-creator-win32-x86_64.zip'
+        directory: 'out/'
+        path: '*'
+
+    - name: Release to ${{ inputs.variant }} tag
+      uses: softprops/action-gh-release@v2
+      with:
+        name: 'Unofficial DevTest Build'
+        tag_name: ${{ inputs.variant }}
+        files: 'out/inochi-creator-win32-x86_64.zip'
+

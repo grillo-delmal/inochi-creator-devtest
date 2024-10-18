@@ -1,0 +1,46 @@
+name: Nightly Build
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  prepare-source:
+    uses: './.github/workflows/build-flatpak.yml'
+    if: github.ref == 'refs/heads/main'
+    with:
+      target_ref: '${{ github.ref_name }}'
+
+  build:
+    needs: prepare-source
+    uses: './.github/workflows/build.yml'
+
+  build-flatpak:
+    needs: prepare-source
+    uses: './.github/workflows/build-flatpak.yml'
+    with:
+      target_ref: '${{ github.ref_name }}'
+
+  signal-copr:
+    needs: prepare-source
+    uses: './.github/workflows/signal-copr.yml'
+    with:
+      target_ref: '${{ github.ref_name }}'
+
+  publish-oci:
+    needs: prepare-source
+    uses: './.github/workflows/publish-oci.yml'
+    with:
+      target_ref: '${{ github.ref_name }}'
+
+  publish-gh:
+    needs: [prepare-source, build, build-flatpak]
+    uses: './.github/workflows/publish-gh.yml'
+    with:
+      target_ref: '${{ github.ref_name }}'
+      variant: 'nightly'
