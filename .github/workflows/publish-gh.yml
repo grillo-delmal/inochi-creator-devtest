@@ -1,5 +1,4 @@
-name: Publish - Publish on Github
-run-name: 'Publish on Github with ${{ inputs.variant }} tag'
+name: (Publish) - Publish on Github
 
 on:
   workflow_call:

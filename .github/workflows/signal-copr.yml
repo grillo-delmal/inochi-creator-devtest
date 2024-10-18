@@ -1,4 +1,4 @@
-name: 'Publish - Signal to Update RPM'
+name: (Publish) - Signal to Update RPM
 
 on:
   workflow_call:

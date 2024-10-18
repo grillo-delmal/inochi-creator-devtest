@@ -1,4 +1,4 @@
-name: 'Build - Build windows/mac/linux bundles'
+name: (Build) - Build windows/mac/linux bundles
 
 on:
   workflow_call:
