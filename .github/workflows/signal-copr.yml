@@ -1,4 +1,4 @@
-name: 'Signal to build COPR rpm'
+name: 'Publish - Signal to Update RPM'
 
 on:
   workflow_call:
@@ -7,8 +7,11 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: write
+
 jobs:
-  publish-nightly-rpm:
+  signal-rpm:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
 

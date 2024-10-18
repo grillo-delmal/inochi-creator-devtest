@@ -1,4 +1,4 @@
-name: 'Build Flatpak and collect source'
+name: 'Prepare - Build Flatpak and Collect Source'
 
 on:
   workflow_call:

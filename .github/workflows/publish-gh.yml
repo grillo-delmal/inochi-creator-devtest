@@ -1,4 +1,4 @@
-name: 'Publish on Github'
+name: Publish - Publish on Github
 run-name: 'Publish on Github with ${{ inputs.variant }} tag'
 
 on:
@@ -11,14 +11,6 @@ on:
         required: true
         type: string
 
-env:
-  APP_ID: io.github.grillo_delmal.inochi-creator
-  MANIFEST_PATH: io.github.grillo_delmal.inochi-creator.yml
-  FLATPAK_BUNDLE: inochi-creator
-  FLATPAK_BRANCH: devtest
-  DESTINATION_REPOSITORY_NAME: inochi2d-flatpak-devtest
-  FLATPAK_BUILD_DIR: build-dir
-  FLATPAK_BUILD_REPO: build-repo
 
 jobs:
   publish-source:
@@ -82,13 +74,7 @@ jobs:
     - name: Download flatpak bundle
       uses: actions/download-artifact@v4
       with:
-        name: ${{ env.FLATPAK_BUNDLE }}
-        path: 'out/'
-
-    - name: Download flatpak debug bundle
-      uses: actions/download-artifact@v4
-      with:
-        name: ${{ env.FLATPAK_BUNDLE }}.debug
+        name: inochi-creator-flatpak
         path: 'out/'
 
     - name: Release to ${{ inputs.variant }} tag
@@ -97,8 +83,8 @@ jobs:
         name: 'Unofficial DevTest Build'
         tag_name: ${{ inputs.variant }}
         files: |
-          out/${{ env.FLATPAK_BUNDLE }}.flatpak
-          out/${{ env.FLATPAK_BUNDLE }}.debug.flatpak
+          out/inochi-creator.flatpak
+          out/inochi-creator.debug.flatpak
 
   publish-linux-zip:
     runs-on: ubuntu-latest

@@ -1,4 +1,4 @@
-name: 'Publish OCI image to Github Repo'
+name: Publish - Publish OCI image
 
 on:
   workflow_call:
@@ -12,6 +12,9 @@ env:
   FLATPAK_BRANCH: devtest
   DESTINATION_REPOSITORY_NAME: inochi2d-flatpak-devtest
   FLATPAK_BUILD_REPO: build-repo
+
+permissions:
+  contents: write
 
 jobs:
   publish-flatpak-oci:

@@ -1,4 +1,4 @@
-name: 'Build flatpak bundles'
+name: 'Build - Build flatpak bundles'
 
 on:
   workflow_call:
