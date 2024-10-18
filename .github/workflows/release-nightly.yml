@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   prepare-source:
-    uses: './.github/workflows/build-flatpak.yml'
+    uses: './.github/workflows/prepare-source.yml'
     if: github.ref == 'refs/heads/main'
     with:
       target_ref: '${{ github.ref_name }}'
