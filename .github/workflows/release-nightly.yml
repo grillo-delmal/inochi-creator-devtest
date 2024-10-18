@@ -29,12 +29,14 @@ jobs:
   signal-copr:
     needs: prepare-source
     uses: './.github/workflows/signal-copr.yml'
+    secrets: inherit
     with:
       target_ref: '${{ github.ref_name }}'
 
   publish-oci:
     needs: prepare-source
     uses: './.github/workflows/publish-oci.yml'
+    secrets: inherit
     with:
       target_ref: '${{ github.ref_name }}'
 
