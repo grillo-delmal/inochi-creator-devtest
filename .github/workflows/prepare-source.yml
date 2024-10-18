@@ -18,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: bilelmoussaoui/flatpak-github-actions:freedesktop-24.08
+      options: --privileged
 
     steps:
     - uses: actions/checkout@v4
