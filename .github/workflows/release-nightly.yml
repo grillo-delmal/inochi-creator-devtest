@@ -26,13 +26,6 @@ jobs:
     with:
       target_ref: '${{ github.ref_name }}'
 
-  signal-copr:
-    needs: prepare-source
-    uses: './.github/workflows/signal-copr.yml'
-    secrets: inherit
-    with:
-      target_ref: '${{ github.ref_name }}'
-
   publish-oci:
     needs: prepare-source
     uses: './.github/workflows/publish-oci.yml'
@@ -46,3 +39,10 @@ jobs:
     with:
       target_ref: '${{ github.ref_name }}'
       variant: 'nightly'
+
+  signal-copr:
+    needs: publish-gh
+    uses: './.github/workflows/signal-copr.yml'
+    secrets: inherit
+    with:
+      target_ref: '${{ github.ref_name }}'
