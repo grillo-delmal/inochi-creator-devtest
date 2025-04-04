@@ -57,6 +57,8 @@ jobs:
 
   build-windows-zip:
     runs-on: windows-latest
+    # Disable for now until numem actually works
+    if: false
 
     steps:
     - uses: dlang-community/setup-dlang@v1

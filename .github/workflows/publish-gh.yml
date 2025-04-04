@@ -115,6 +115,8 @@ jobs:
 
   publish-windows-zip-nightly:
     runs-on: ubuntu-latest
+    # Disable for now until numem actually works
+    if: false
 
     steps:
     - name: Checkout
